@@ -2,139 +2,196 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Oráculo Social v65</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo Diagnóstico v66</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
     <style>
-        body { margin: 0; height: 100vh; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #webcam { position: fixed; opacity: 0; pointer-events: none; }
-        #fondo-dinamico { position: fixed; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, #1a237e, #000); z-index: 0; transition: background 2s; }
-        #cabeza { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; flex-direction: column; align-items: center; }
-        .ojos-container { display: flex; gap: 40px; }
-        .ojo { width: 120px; height: 180px; background: white; border-radius: 50%; position: relative; box-shadow: 0 0 50px rgba(255,255,255,0.2); overflow: hidden; }
-        .pupila { width: 40px; height: 50px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .boca { width: 40px; height: 5px; background: white; border-radius: 20px; margin-top: 30px; transition: 0.2s; }
-        .hablando .boca { animation: hablar 0.2s infinite alternate; }
-        @keyframes hablar { from { height: 5px; } to { height: 20px; } }
-        #texto-principal { position: fixed; top: 15%; width: 80%; text-align: center; font-size: 2rem; font-weight: bold; text-shadow: 0 0 15px #000; z-index: 100; }
-        #btn-init { padding: 20px 50px; font-size: 1.5rem; border: 2px solid #00e676; background: transparent; color: #00e676; border-radius: 50px; cursor: pointer; z-index: 10000; }
-        #botones { position: fixed; bottom: 20%; display: none; gap: 20px; z-index: 1000; }
-        .btn-opcion { padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 30px; border: 2px solid white; background: rgba(0,0,0,0.5); color: white; }
+        body { margin: 0; background: black; color: white; font-family: monospace; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        
+        /* CONSOLA EN PANTALLA (Para ver errores sin F12) */
+        #console-log {
+            position: fixed; top: 0; left: 0; width: 100%; height: 150px;
+            background: rgba(0,0,0,0.8); color: #00ff00;
+            overflow-y: scroll; z-index: 9999; padding: 10px;
+            font-size: 12px; border-bottom: 2px solid green;
+            pointer-events: none; /* Dejar pasar clics */
+        }
+        .error-log { color: red !important; font-weight: bold; }
+
+        /* VIDEO Y CAPAS */
+        #webcam { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* BOTÓN DE INICIO OBLIGATORIO */
+        #btn-start {
+            padding: 20px 40px; font-size: 20px; background: #00e676; color: black;
+            border: none; border-radius: 50px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 20px #00e676; z-index: 5000;
+        }
+
+        /* UI DEL ORÁCULO */
+        #texto-oraculo {
+            font-size: 24px; text-align: center; margin-top: 160px; /* Debajo de la consola */
+            text-shadow: 0 2px 4px black; z-index: 10; font-weight: bold; background: rgba(0,0,0,0.5); padding: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="fondo-dinamico"></div>
-    <video id="webcam" autoplay playsinline muted width="640" height="480"></video>
-    <div id="texto-principal">CARGANDO...</div>
-    
-    <div id="inicio">
-        <button id="btn-init" onclick="arrancar()" disabled>ESPERA...</button>
-    </div>
+    <div id="console-log">Esperando inicio...<br></div>
 
-    <div id="cabeza">
-        <div class="ojos-container">
-            <div class="ojo"><div class="pupila"></div></div>
-            <div class="ojo"><div class="pupila"></div></div>
-        </div>
-        <div class="boca"></div>
-    </div>
+    <video id="webcam" autoplay playsinline muted></video>
 
-    <div id="botones">
-        <button class="btn-opcion" onclick="respuestaBoton('si')">ACEPTO</button>
-        <button class="btn-opcion" onclick="respuestaBoton('no')">NO</button>
+    <div id="overlay">
+        <button id="btn-start" onclick="iniciarTodo()">INICIAR SISTEMA (Click Aquí)</button>
+        <div id="texto-oraculo" style="display:none">SISTEMA LISTO<br>Buscando rostro...</div>
     </div>
 
     <script>
-        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs";
-        let modelo, video = document.getElementById('webcam'), estado = "CARGANDO";
+        // === TU API KEY ===
+        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs"; 
 
-        async function init() {
+        // === LOGGER EN PANTALLA ===
+        function log(msg, esError = false) {
+            const c = document.getElementById('console-log');
+            const linea = document.createElement('div');
+            linea.innerText = `> ${msg}`;
+            if(esError) linea.className = "error-log";
+            c.appendChild(linea);
+            c.scrollTop = c.scrollHeight;
+            console.log(msg);
+        }
+
+        window.onerror = function(message, source, lineno, colno, error) {
+            log(`ERROR FATAL: ${message}`, true);
+        };
+
+        let modelo = null;
+        let video = document.getElementById('webcam');
+        let detectando = false;
+
+        // 1. FUNCIÓN DE ARRANQUE (Al hacer click)
+        async function iniciarTodo() {
+            document.getElementById('btn-start').style.display = 'none';
+            document.getElementById('texto-oraculo').style.display = 'block';
+            
+            // Activar AudioContext (Truco para navegadores)
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            await audioCtx.resume();
+            log("Audio desbloqueado.");
+
+            // Cargar Cámara
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                modelo = await blazeface.load();
-                document.getElementById('btn-init').disabled = false;
-                document.getElementById('btn-init').innerText = "INICIAR";
-                document.getElementById('texto-principal').innerText = "SISTEMA LISTO";
-            } catch (e) { alert("Error cámara: " + e.message); }
-        }
-
-        function arrancar() {
-            document.getElementById('inicio').style.display = 'none';
-            estado = "BUSCANDO";
-            loop();
-        }
-
-        async function loop() {
-            const faces = await modelo.estimateFaces(video, false);
-            if (faces.length > 0 && estado === "BUSCANDO") {
-                const size = faces[0].bottomRight[0] - faces[0].topLeft[0];
-                if (size > 50) { // Si te ve a una distancia normal
-                    iniciar();
-                }
-            }
-            requestAnimationFrame(loop);
-        }
-
-        async function iniciar() {
-            estado = "CHARLANDO";
-            let saludo = await pedirGemini("Salúdame de forma muy mística y pregúntame mi nombre.");
-            hablar(saludo, () => {
-                escuchar(nombre => {
-                    pedirGemini(`Mi nombre es ${nombre}. Hazme un cumplido sobre mi energía e invítame a leer mi aura.`).then(invita => {
-                        hablar(invita, () => {
-                            document.getElementById('botones').style.display = 'flex';
-                        });
-                    });
+                log("Solicitando cámara...");
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: 640, height: 480 }, 
+                    audio: false 
                 });
-            });
+                video.srcObject = stream;
+                
+                await new Promise(r => video.onloadedmetadata = r);
+                video.play();
+                log("Cámara activa y reproduciendo.");
+            } catch (e) {
+                log("ERROR CÁMARA: " + e.message, true);
+                return;
+            }
+
+            // Cargar Modelo
+            try {
+                log("Cargando cerebro (Blazeface)... espere.");
+                modelo = await blazeface.load();
+                log("Modelo cargado correctamente.");
+                detectando = true;
+                loopDeteccion();
+            } catch (e) {
+                log("ERROR MODELO: " + e.message, true);
+            }
         }
 
-        async function pedirGemini(prompt) {
+        // 2. BUCLE DE DETECCIÓN
+        async function loopDeteccion() {
+            if (!detectando) return;
+
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                const predictions = await modelo.estimateFaces(video, false);
+
+                if (predictions.length > 0) {
+                    const p = predictions[0];
+                    const anchoCara = p.bottomRight[0] - p.topLeft[0];
+                    
+                    document.getElementById('texto-oraculo').innerHTML = `ROSTRO DETECTADO<br>Tamaño: ${Math.round(anchoCara)}`;
+
+                    // UMBRAL DE DETECCIÓN (Ajustado a 40 para ser sensible)
+                    if (anchoCara > 40) { 
+                        log("¡Cara suficientemente cerca! Iniciando contacto...");
+                        detectando = false; // Pausar detección para no saturar
+                        iniciarConversacion();
+                    }
+                } else {
+                    document.getElementById('texto-oraculo').innerText = "BUSCANDO ROSTRO...";
+                }
+            } catch (e) {
+                log("Error en loop: " + e.message, true);
+            }
+
+            if(detectando) requestAnimationFrame(loopDeteccion);
+        }
+
+        // 3. CONEXIÓN CON GEMINI
+        async function iniciarConversacion() {
+            hablar("He sentido tu presencia. Dime, ¿cuál es tu nombre?");
+            
+            // Simulación de escucha (o implementación real simple)
+            setTimeout(() => {
+                let nombre = prompt("El oráculo no puede oírte por el ruido del universo (navegador). Escribe tu nombre:");
+                if(nombre) {
+                    procesarGemini(nombre);
+                } else {
+                    detectando = true; loopDeteccion(); // Reiniciar si cancela
+                }
+            }, 4000); // Esperar a que termine de hablar aprox
+        }
+
+        async function procesarGemini(nombre) {
+            log("Consultando a Gemini...");
+            const prompt = `El usuario se llama ${nombre}. Eres un oráculo místico. Salúdalo brevemente y predice el color de su aura en una frase corta.`;
+            
+            try {
+                const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                const data = await res.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (e) { 
-                console.error("Error API:", e);
-                return "Siento una interferencia cósmica..."; 
+
+                if(!respuesta.ok) throw new Error("Error API: " + respuesta.status);
+
+                const data = await respuesta.json();
+                const textoGemini = data.candidates[0].content.parts[0].text;
+                
+                log("Gemini respondió: " + textoGemini);
+                hablar(textoGemini);
+
+            } catch (e) {
+                log("ERROR GEMINI: " + e.message, true);
+                hablar("Las estrellas están en silencio hoy...");
             }
         }
 
-        function hablar(txt, cb) {
-            document.getElementById('texto-principal').innerText = txt;
-            const u = new SpeechSynthesisUtterance(txt);
-            u.lang = 'es-MX';
-            document.getElementById('cabeza').classList.add('hablando');
-            u.onend = () => {
-                document.getElementById('cabeza').classList.remove('hablando');
-                if(cb) cb();
-            };
-            window.speechSynthesis.speak(u);
+        // 4. SÍNTESIS DE VOZ (TTS)
+        function hablar(texto) {
+            log("Hablando: " + texto);
+            document.getElementById('texto-oraculo').innerText = texto;
+            
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = "es-MX";
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
         }
 
-        function escuchar(cb) {
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.lang = 'es-MX';
-            rec.start();
-            document.getElementById('texto-principal').innerText = "TE ESCUCHO...";
-            rec.onresult = (e) => cb(e.results[0][0].transcript);
-        }
-
-        function respuestaBoton(r) {
-            document.getElementById('botones').style.display = 'none';
-            if(r === 'si') {
-                hablar("Excelente elección. Siento que tu aura es de color VIOLETA.");
-            } else {
-                hablar("Que la luz te guíe. Adiós.");
-            }
-        }
-
-        init();
     </script>
 </body>
 </html>
