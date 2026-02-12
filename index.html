@@ -1,390 +1,281 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oráculo v71 - Core Blindado</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
-    
-    <script type="importmap">
-      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
-    </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+<title>Oráculo Social IA v72</title>
 
-    <style>
-        /* ESTÉTICA MÍSTICA (Optimizada para Móvil y PC) */
-        body { margin: 0; height: 100vh; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
-        
-        /* CÁMARA Y VIDEO */
-        #webcam { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; transform: scaleX(-1); z-index: 0; }
-        
-        /* CAPAS VISUALES */
-        #fondo-mistico { position: fixed; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, rgba(13,71,161,0.6), #000); z-index: 1; pointer-events: none; transition: background 1s; mix-blend-mode: hard-light; }
-        #particulas { position: fixed; top:0; left:0; width:100%; height:100%; z-index: 2; pointer-events: none; }
-        
-        /* UI CENTRAL */
-        #ui-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-        
-        /* CABEZA (Avatar) */
-        #cabeza { position: relative; margin-bottom: 20px; transition: transform 0.1s ease-out; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3)); }
-        .ojos-container { display: flex; gap: 30px; }
-        .ojo { width: 100px; height: 160px; background: white; border-radius: 50%; position: relative; overflow: hidden; border: 4px solid rgba(255,255,255,0.1); }
-        .pupila { width: 35px; height: 45px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: all 0.1s; }
-        .parpado { position: absolute; width: 100%; background: #000; transition: 0.3s; z-index: 5; left: 0; height: 40%; } /* Estado Zen por defecto */
-        .top { top: 0; } .bottom { bottom: 0; }
+<!-- TF + BlazeFace -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 
-        /* ESTADOS OJOS */
-        .ojo.abierto .top, .ojo.abierto .bottom { height: 0%; }
-        .ojo.entrecerrado .top, .ojo.entrecerrado .bottom { height: 35%; }
-        
-        /* TEXTOS */
-        #status-text { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #00e676; margin-bottom: 10px; text-shadow: 0 0 10px black; }
-        #dialogo-principal { font-size: 24px; font-weight: bold; text-align: center; max-width: 90%; text-shadow: 0 2px 4px black; min-height: 60px; }
+<style>
+body{
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  background:#000;
+  font-family:'Segoe UI',sans-serif;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-        /* BOTONES DE INTERACCIÓN */
-        #botones-container { display: none; gap: 20px; margin-top: 30px; pointer-events: auto; }
-        .btn-action { padding: 15px 40px; border: 1px solid white; background: rgba(0,0,0,0.6); color: white; border-radius: 30px; font-size: 16px; cursor: pointer; backdrop-filter: blur(4px); transition: 0.2s; }
-        .btn-action:hover { background: white; color: black; transform: scale(1.05); }
+#webcam{
+  position:fixed;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform:scaleX(-1);
+  opacity:.4;
+}
 
-        /* BOTÓN INICIO */
-        #pantalla-inicio { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #btn-start { padding: 20px 50px; font-size: 20px; border: 2px solid #00e676; color: #00e676; background: transparent; border-radius: 50px; cursor: pointer; font-weight: bold; letter-spacing: 2px; }
-        
-        /* SENSOR */
-        #sensor { position: fixed; bottom: 50px; width: 100px; height: 100px; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 40px; pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); z-index: 100; }
-        #sensor.activo { background: white; color: black; box-shadow: 0 0 50px white; transform: scale(0.95); }
+#fondo{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle,#0d47a1,#000);
+  mix-blend-mode:hard-light;
+}
 
-        /* DEBUG VISUAL (Borde verde al detectar) */
-        .detectado { box-shadow: inset 0 0 50px #00e676; }
+#ui{
+  position:relative;
+  z-index:10;
+  text-align:center;
+  max-width:90%;
+}
 
-    </style>
+#dialogo{
+  font-size:24px;
+  margin-top:20px;
+  min-height:80px;
+}
+
+button{
+  margin-top:20px;
+  padding:15px 35px;
+  border-radius:30px;
+  border:1px solid white;
+  background:rgba(0,0,0,.6);
+  color:white;
+  cursor:pointer;
+}
+
+#sensor{
+  display:none;
+  position:fixed;
+  bottom:40px;
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  border:2px solid white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+</style>
 </head>
-<body id="body">
 
-    <video id="webcam" autoplay playsinline muted></video>
-    <div id="fondo-mistico"></div>
-    <canvas id="particulas"></canvas>
+<body>
 
-    <div id="ui-layer">
-        <div id="status-text">ESPERANDO INICIO...</div>
-        
-        <div id="cabeza">
-            <div class="ojos-container">
-                <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="parpado bottom"></div></div>
-                <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="parpado bottom"></div></div>
-            </div>
-        </div>
+<video id="webcam" autoplay playsinline muted></video>
+<div id="fondo"></div>
 
-        <div id="dialogo-principal"></div>
+<div id="ui">
+  <div id="status">ESPERANDO INICIO</div>
+  <div id="dialogo"></div>
+  <button onclick="iniciar()">INICIAR</button>
+</div>
 
-        <div id="botones-container">
-            <button class="btn-action" onclick="respuestaUsuario('si')">ACEPTAR</button>
-            <button class="btn-action" onclick="respuestaUsuario('no')">AHORA NO</button>
-        </div>
-    </div>
+<div id="sensor">👆</div>
 
-    <div id="sensor" onmousedown="tocarSensor()" onmouseup="soltarSensor()" ontouchstart="tocarSensor()" ontouchend="soltarSensor()">👆</div>
 
-    <div id="pantalla-inicio">
-        <button id="btn-start" onclick="iniciarSistema()">INICIAR RITUAL</button>
-        <div style="margin-top:20px; color:gray; font-size:12px;">v71 Core Fix</div>
-    </div>
+<script type="module">
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
+/* =========================
+   GEMINI DIRECTO (LOCAL)
+========================= */
 
-        // === API KEY ===
-        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs"; 
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        // === VARIABLES GLOBALES ===
-        let genAI, model, chat;
-        let video = document.getElementById('webcam');
-        let blazefaceModel = null;
-        let estado = "OFF"; // OFF, BUSCANDO, CHARLANDO
-        let isSpeaking = false;
-        let nombreUsuario = "Viajero";
+const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs";
 
-        // === 1. ARRANQUE DEL SISTEMA ===
-        window.iniciarSistema = async function() {
-            const btn = document.getElementById('btn-start');
-            btn.innerText = "CALIBRANDO CÁMARA...";
-            
-            // Audio Unlock
-            try { const ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch(e){}
+const genAI = new GoogleGenerativeAI(API_KEY);
 
-            // Iniciar Gemini
-            try {
-                genAI = new GoogleGenerativeAI(API_KEY);
-                model = genAI.getGenerativeModel({ 
-                    model: "gemini-1.5-flash",
-                    systemInstruction: "Eres un Oráculo. Respuestas breves (max 15 palabras). Tono místico."
-                });
-            } catch(e) { console.error("Error Gemini", e); }
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash"
+});
 
-            // Iniciar Cámara (CON RESTRICCIONES DE TAMAÑO PARA EVITAR ERRORES)
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, 
-                    audio: false 
-                });
-                video.srcObject = stream;
-                
-                // Esperar a que el video tenga datos reales
-                await new Promise(resolve => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
-                });
+async function pedirGemini(prompt){
+  try{
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  }catch(e){
+    console.error("Gemini:",e);
+    return "Las energías están inestables...";
+  }
+}
 
-                // Cargar Blazeface
-                blazefaceModel = await blazeface.load();
 
-                // Ocultar inicio
-                document.getElementById('pantalla-inicio').style.display = 'none';
-                
-                // Iniciar Chat
-                chat = model.startChat();
-                
-                // Arrancar Bucle
-                estado = "BUSCANDO";
-                actualizarStatus("BUSCANDO ENERGÍA...");
-                animLoop(); // Partículas
-                detectarLoop(); // Visión
+/* =========================
+   ELEMENTOS
+========================= */
 
-            } catch (e) {
-                alert("Error crítico: " + e.message);
-                btn.innerText = "ERROR - RECARGA";
-            }
-        };
+const video = document.getElementById("webcam");
+const dialogo = document.getElementById("dialogo");
+const status = document.getElementById("status");
+const sensor = document.getElementById("sensor");
 
-        // === 2. BUCLE DE VISIÓN (EL CEREBRO) ===
-        async function detectarLoop() {
-            if (estado === "OFF") return;
+let modeloCara;
+let estado="OFF";
+let nombre="Viajero";
 
-            try {
-                // Verificar que el modelo y el video estén listos
-                if (blazefaceModel && video.readyState === 4) {
-                    
-                    const predictions = await blazefaceModel.estimateFaces(video, false);
 
-                    if (predictions.length > 0) {
-                        // DETECTADO
-                        document.body.classList.add('detectado'); // Borde verde visual
-                        
-                        // Mover ojos (Seguimiento)
-                        const p = predictions[0];
-                        const x = (p.topLeft[0] + p.bottomRight[0]) / 2;
-                        const eyeX = (1 - (x / video.videoWidth)) * 30 - 15; // Invertir e interpolar
-                        moverOjos(eyeX);
+/* =========================
+   VOZ
+========================= */
 
-                        // Lógica de Estado
-                        if (estado === "BUSCANDO") {
-                            // Validar tamaño para asegurar cercanía
-                            const anchoCara = p.bottomRight[0] - p.topLeft[0];
-                            if (anchoCara > 35) { // Umbral bajo para detectar fácil
-                                console.log("Rostro confirmado. Iniciando saludo.");
-                                iniciarInteraccion();
-                            }
-                        }
+let voz=null;
 
-                    } else {
-                        // NO DETECTADO
-                        document.body.classList.remove('detectado');
-                        moverOjos(0);
-                    }
-                }
-            } catch (e) {
-                console.warn("Error en bucle de visión (ignorable):", e);
-            }
+speechSynthesis.onvoiceschanged = ()=>{
+  voz = speechSynthesis.getVoices().find(v=>v.lang.includes("es")) || null;
+};
 
-            requestAnimationFrame(detectarLoop);
-        }
+function hablar(txt,cb){
+  dialogo.innerText = txt;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(txt);
+  if(voz) u.voice = voz;
+  u.onend = ()=>cb && cb();
+  speechSynthesis.speak(u);
+}
 
-        // === 3. LÓGICA DE INTERACCIÓN ===
-        async function iniciarInteraccion() {
-            estado = "CHARLANDO"; // Bloquear para que no se repita
-            actualizarStatus("CONECTANDO CON EL ORÁCULO...");
-            cambiarOjos("abierto");
 
-            // Llamada segura a Gemini
-            let saludo = await pedirGemini("Un usuario ha llegado. Salúdalo misticamente y pregunta su nombre.");
-            hablar(saludo, () => {
-                escuchar(nombre => {
-                    nombreUsuario = nombre || "Ser de Luz";
-                    // Fase 2
-                    pedirGemini(`El usuario es ${nombreUsuario}. Invítalo a leer su aura.`).then(txt => {
-                        hablar(txt, () => {
-                            document.getElementById('botones-container').style.display = 'flex';
-                        });
-                    });
-                });
-            });
-        }
+/* =========================
+   ESCUCHA
+========================= */
 
-        window.respuestaUsuario = function(tipo) {
-            document.getElementById('botones-container').style.display = 'none';
-            if(tipo === 'si') {
-                pedirGemini("El usuario aceptó. Hazle una pregunta filosófica profunda pero breve.").then(preg => {
-                    hablar(preg, () => flujoConversacion());
-                });
-            } else {
-                hablar("El universo te esperará. Adiós.", () => {
-                    estado = "BUSCANDO"; 
-                    cambiarOjos("entrecerrado");
-                    actualizarStatus("BUSCANDO...");
-                });
-            }
-        };
+function escuchar(cb){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        function flujoConversacion() {
-            escuchar(resp => {
-                // Decisión dinámica: Gemini decide si seguir o ir al sensor
-                pedirGemini(`Usuario respondió: "${resp}". Si es suficiente, di 'USA EL SENSOR'. Si no, haz otra pregunta.`).then(txt => {
-                    if(txt.toUpperCase().includes("SENSOR")) {
-                        hablar("Es momento. Coloca tu dedo en el sensor.", () => {
-                            document.getElementById('sensor').style.display = 'flex';
-                        });
-                    } else {
-                        hablar(txt, () => flujoConversacion());
-                    }
-                });
-            });
-        }
+  if(!SR){
+    const r = prompt("Escribe tu respuesta:");
+    cb(r);
+    return;
+  }
 
-        // === 4. SENSOR FINAL ===
-        window.tocarSensor = function() {
-            document.getElementById('sensor').classList.add('activo');
-            actualizarStatus("LEYENDO AURA...");
-            sonidoMistico();
-            
-            setTimeout(() => {
-                document.getElementById('sensor').style.display = 'none';
-                
-                pedirGemini("Veredicto final: Define un color de aura y una predicción futura.").then(final => {
-                    let color = "#fff";
-                    if(final.includes("Dorado")) color = "#ffd700";
-                    if(final.includes("Violeta")) color = "#d500f9";
-                    if(final.includes("Rojo")) color = "#ff1744";
-                    if(final.includes("Azul")) color = "#00e5ff";
-                    
-                    document.getElementById('fondo-mistico').style.background = `radial-gradient(circle, ${color}, #000)`;
-                    hablar(final, () => {
-                        setTimeout(() => location.reload(), 5000);
-                    });
-                });
-            }, 3000);
-        }
+  const rec = new SR();
+  rec.lang="es-MX";
 
-        window.soltarSensor = function() { document.getElementById('sensor').classList.remove('activo'); }
+  rec.onresult = e=>{
+    cb(e.results[0][0].transcript);
+  };
 
-        // === 5. CEREBRO HÍBRIDO (Gemini + Fallback) ===
-        async function pedirGemini(prompt) {
-            try {
-                // Timeout de 5 segundos para no trabarse
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
-                const apiPromise = chat.sendMessage(prompt);
-                
-                const result = await Promise.race([apiPromise, timeoutPromise]);
-                return result.response.text();
-            } catch (e) {
-                console.log("Fallo Gemini o Timeout. Usando Backup.");
-                // RESPUESTAS DE RESPALDO (Por si falla la red/API)
-                if(prompt.includes("Salúdalo")) return "Bienvenido, viajero. ¿Cuál es tu nombre?";
-                if(prompt.includes("Invítalo")) return `Interesante, ${nombreUsuario}. ¿Quieres que lea tu destino?`;
-                if(prompt.includes("pregunta")) return "¿Te guía la razón o la pasión?";
-                if(prompt.includes("Veredicto")) return "Tu aura es Violeta. Grandes cambios se aproximan.";
-                return "Las estrellas guardan silencio. Continúa.";
-            }
-        }
+  rec.start();
+}
 
-        // === 6. I/O (Voz y Ojos) ===
-        function hablar(txt, cb) {
-            document.getElementById('dialogo-principal').innerText = txt;
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(txt);
-            
-            // Buscar voz en español
-            const voces = window.speechSynthesis.getVoices();
-            const v = voces.find(voz => voz.lang.startsWith('es'));
-            if(v) u.voice = v;
-            u.rate = 1.1;
 
-            u.onstart = () => isSpeaking = true;
-            u.onend = () => { isSpeaking = false; if(cb) cb(); };
-            window.speechSynthesis.speak(u);
-        }
+/* =========================
+   CÁMARA + DETECCIÓN
+========================= */
 
-        function escuchar(cb) {
-            if(isSpeaking) return;
-            actualizarStatus("ESCUCHANDO...");
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!SpeechRecognition) {
-                setTimeout(() => {
-                    let r = prompt("Escribe tu respuesta:");
-                    cb(r || "...");
-                }, 1000);
-                return;
-            }
-            
-            const rec = new SpeechRecognition();
-            rec.lang = 'es-MX';
-            rec.start();
-            rec.onresult = (e) => {
-                actualizarStatus("PROCESANDO...");
-                cb(e.results[0][0].transcript);
-            };
-            rec.onerror = () => cb("Silencio");
-        }
+async function iniciar(){
 
-        function moverOjos(x) {
-            const pupilas = document.querySelectorAll('.pupila');
-            pupilas.forEach(p => p.style.transform = `translate(calc(-50% + ${x}px), -50%)`);
-        }
-        
-        function cambiarOjos(estado) {
-            const ojos = document.querySelectorAll('.ojo');
-            ojos.forEach(o => {
-                o.classList.remove('abierto', 'entrecerrado');
-                if(estado !== 'zen') o.classList.add(estado);
-            });
-        }
+  status.innerText="CARGANDO...";
 
-        function actualizarStatus(txt) { document.getElementById('status-text').innerText = txt; }
-        
-        // Sonido
-        function sonidoMistico() {
-            try {
-                const ac = new AudioContext();
-                const osc = ac.createOscillator();
-                const gain = ac.createGain();
-                osc.connect(gain); gain.connect(ac.destination);
-                osc.frequency.setValueAtTime(200, ac.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(50, ac.currentTime + 2);
-                gain.gain.setValueAtTime(0.1, ac.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 2);
-                osc.start(); osc.stop(ac.currentTime + 2);
-            } catch(e){}
-        }
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  video.srcObject=stream;
 
-        // Partículas
-        const cvs = document.getElementById('particulas');
-        const ctx = cvs.getContext('2d');
-        cvs.width = window.innerWidth; cvs.height = window.innerHeight;
-        let pArray = Array.from({length:50}, () => ({x:Math.random()*cvs.width, y:Math.random()*cvs.height, vx:(Math.random()-.5), vy:(Math.random()-.5)}));
-        function animLoop() {
-            ctx.clearRect(0,0,cvs.width,cvs.height);
-            ctx.fillStyle = "rgba(255,255,255,0.3)";
-            pArray.forEach(p => {
-                p.x+=p.vx; p.y+=p.vy;
-                if(p.x<0||p.x>cvs.width) p.vx*=-1; if(p.y<0||p.y>cvs.height) p.vy*=-1;
-                ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(animLoop);
-        }
+  modeloCara = await blazeface.load();
 
-    </script>
+  estado="BUSCANDO";
+
+  detectar();
+
+  status.innerText="ACÉRCATE";
+}
+
+
+async function detectar(){
+
+  if(estado==="OFF") return;
+
+  if(video.readyState >= 2){
+    const preds = await modeloCara.estimateFaces(video,false);
+
+    if(preds.length>0 && estado==="BUSCANDO"){
+      estado="CHARLANDO";
+      flujoInicio();
+    }
+  }
+
+  requestAnimationFrame(detectar);
+}
+
+
+/* =========================
+   FLUJO SOCIAL
+========================= */
+
+async function flujoInicio(){
+
+  const saludo = await pedirGemini("Saluda de forma cálida y pregunta el nombre.");
+  hablar(saludo,()=>{
+    escuchar(async r=>{
+      nombre=r||"Viajero";
+
+      const inv = await pedirGemini(`Su nombre es ${nombre}. Invítalo a participar en una lectura de aura.`);
+      hablar(inv,()=>{
+        flujoPreguntas();
+      });
+    });
+  });
+}
+
+
+async function flujoPreguntas(){
+
+  let preguntas=4;
+
+  const hacer=async()=>{
+    if(preguntas<=0){
+      sensor.style.display="flex";
+      hablar("Coloca tu dedo para analizar tu energía.");
+      return;
+    }
+
+    const p = await pedirGemini("Haz una pregunta reflexiva breve.");
+    hablar(p,()=>{
+      escuchar(async r=>{
+        preguntas--;
+        hacer();
+      });
+    });
+  }
+
+  hacer();
+}
+
+
+/* =========================
+   SENSOR AURA
+========================= */
+
+sensor.addEventListener("click",async()=>{
+
+  sensor.style.display="none";
+  status.innerText="ANALIZANDO AURA...";
+
+  const res = await pedirGemini(`Describe el aura de ${nombre} con color y cumplido positivo.`);
+
+  hablar(res,()=>{
+    estado="BUSCANDO";
+    status.innerText="ACÉRCATE";
+  });
+
+});
+
+</script>
 </body>
 </html>
