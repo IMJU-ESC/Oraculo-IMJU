@@ -3,444 +3,507 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Oráculo Viviente v3.0</title>
+    <title>Oráculo Empático v4.0 - Dual Brain</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 
     <style>
-        /* --- ESTÉTICA MÍSTICA --- */
-        :root { --color-primary: #00f7ff; --color-glow: rgba(0, 247, 255, 0.4); }
+        /* --- ESTÉTICA BASE --- */
+        :root { 
+            --color-primary: #00f7ff; 
+            --bg-grad: radial-gradient(circle at 50% 50%, #101030, #000);
+        }
         body { 
             margin: 0; height: 100vh; overflow: hidden; 
             background: #000; 
             font-family: 'Courier New', sans-serif; 
             color: white; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            transition: background 1s ease;
         }
 
-        /* CÁMARA INVISIBLE (Esencial para que funcione la detección) */
-        #webcam { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            opacity: 0; pointer-events: none; z-index: -10;
-        }
-
-        /* FONDO ATMOSFÉRICO */
+        /* FONDO DINÁMICO */
         #aura-bg {
             position: fixed; inset: 0; 
-            background: radial-gradient(circle at 50% 50%, #101030, #000);
-            z-index: -5; transition: background 1.5s ease;
+            background: var(--bg-grad);
+            z-index: -5; transition: opacity 2s ease; opacity: 0.8;
         }
 
-        /* --- CONTENEDOR FLOTANTE DEL AVATAR --- */
+        /* --- AVATAR --- */
         #avatar-wrapper {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            transition: transform 0.1s linear; /* Movimiento fluido por JS */
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 10;
-            will-change: transform;
         }
 
-        /* ESTRUCTURA DE LA CARA */
         .cabeza {
-            display: flex; gap: 40px; 
-            animation: respirar 4s infinite ease-in-out;
-        }
-        
-        @keyframes respirar {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            position: relative; width: 300px; height: 300px;
+            display: flex; justify-content: center; align-items: center;
         }
 
+        /* OJOS */
+        .ojos-container { display: flex; gap: 40px; z-index: 2; }
         .ojo {
-            width: 140px; height: 190px; 
-            background: linear-gradient(135deg, #fff, #e0e0e0);
+            width: 90px; height: 120px; background: #fff;
             border-radius: 50%; position: relative; overflow: hidden;
-            box-shadow: 0 0 50px var(--color-glow);
-            border: 2px solid rgba(255,255,255,0.2);
-            transition: height 0.2s, transform 0.3s; /* Para expresiones */
+            box-shadow: 0 0 40px rgba(255,255,255,0.3);
+            transition: all 0.5s;
+        }
+        .pupila {
+            width: 35px; height: 45px; background: #000;
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            transition: width 0.3s;
+        }
+        .parpado { position: absolute; width: 100%; background: #000; left: 0; transition: height 0.3s; z-index: 10; }
+        .top { top: 0; height: 2%; } .bottom { bottom: 0; height: 2%; }
+
+        /* CEJAS (NUEVO) */
+        .cejas-container {
+            position: absolute; top: 40px; width: 240px;
+            display: flex; justify-content: space-between; z-index: 3;
+        }
+        .ceja {
+            width: 90px; height: 12px; background: white; border-radius: 10px;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        .pupila {
-            width: 45px; height: 55px; background: #000;
-            border-radius: 50%; position: absolute;
-            top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); /* Centrado por defecto */
-            transition: width 0.2s, height 0.2s; /* Dilatación */
+        /* BOCA (NUEVO) */
+        .boca-container {
+            position: absolute; bottom: 60px; width: 100%;
+            display: flex; justify-content: center; z-index: 2;
+        }
+        .boca {
+            width: 60px; height: 20px; 
+            border: 4px solid white; border-color: transparent transparent white transparent;
+            border-radius: 50%;
+            transition: all 0.5s;
+        }
+
+        /* --- ESTADOS EMOCIONALES (Clases CSS que controlan todo) --- */
+        
+        /* 1. MISTICO (Neutro/Default) -> Azul/Violeta */
+        .mistico { --bg-grad: radial-gradient(circle, #1a237e, #000); }
+        .mistico .ceja { transform: translateY(0); }
+        .mistico .boca { width: 50px; height: 10px; border-radius: 0; border-bottom: 4px solid white; } /* Linea recta */
+
+        /* 2. CURIOSO (Preguntando) -> Verde/Turquesa */
+        .curioso { --bg-grad: radial-gradient(circle, #00695c, #000); }
+        .curioso .ceja.izq { transform: translateY(-15px) rotate(-10deg); }
+        .curioso .ceja.der { transform: translateY(5px) rotate(5deg); }
+        .curioso .boca { width: 40px; height: 20px; border-radius: 50%; border: 3px solid white; } /* Boca 'O' */
+
+        /* 3. INTENSO (Analizando/Juzgando) -> Rojo/Naranja */
+        .intenso { --bg-grad: radial-gradient(circle, #b71c1c, #000); }
+        .intenso .ceja.izq { transform: translateY(10px) rotate(20deg); }
+        .intenso .ceja.der { transform: translateY(10px) rotate(-20deg); }
+        .intenso .ojo { height: 100px; } /* Ojos entrecerrados */
+        .intenso .boca { border-radius: 0; width: 40px; transform: scaleY(-1); margin-bottom: 10px;} /* Boca triste/seria */
+
+        /* 4. FELIZ (Resultado Bueno) -> Dorado */
+        .feliz { --bg-grad: radial-gradient(circle, #ff6f00, #000); }
+        .feliz .ceja { transform: translateY(-20px); }
+        .feliz .boca { width: 80px; height: 40px; border-radius: 50%; border-color: transparent transparent white transparent; } /* Sonrisa */
+
+        /* UI TEXTO */
+        #dialogo {
+            position: fixed; bottom: 25%; width: 80%; text-align: center;
+            font-size: 20px; text-shadow: 0 2px 4px black; min-height: 50px;
         }
         
-        .brillo { 
-            width: 15px; height: 15px; background: white; 
-            border-radius: 50%; position: absolute; top: 20%; right: 20%; 
-            opacity: 0.8;
-        }
-
-        /* PÁRPADOS (Expresividad) */
-        .parpado { position: absolute; width: 100%; background: #000; left: 0; transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 15; }
-        .top { top: 0; height: 5%; } .bottom { bottom: 0; height: 5%; }
-
-        /* ESTADOS EMOCIONALES */
-        .pensando .pupila { width: 35px; height: 45px; opacity: 0.7; }
-        .pensando .ojo { transform: scale(0.95); }
-        .sorprendido .parpado.top { height: 0%; }
-        .sorprendido .pupila { width: 60px; height: 70px; }
-        .sospecha .parpado.top { height: 35%; }
-        .sospecha .parpado.bottom { height: 20%; }
-
-        /* --- CAJA DE TEXTO --- */
-        #dialogo {
-            position: fixed; bottom: 25%; 
-            width: 80%; max-width: 600px;
-            text-align: center; z-index: 20;
-            font-size: 22px; line-height: 1.5;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            min-height: 60px;
-        }
-        .texto-ia { opacity: 0; transition: opacity 0.5s; }
-        .visible { opacity: 1; }
-
-        /* --- BOTONES DE RESPUESTA --- */
+        /* BOTONES */
         #controles {
-            position: fixed; bottom: 10%; 
-            display: flex; gap: 20px; z-index: 50;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            position: fixed; bottom: 10%; display: flex; gap: 15px;
+            opacity: 0; pointer-events: none; transition: 0.5s;
         }
         .activo { opacity: 1 !important; pointer-events: auto !important; }
-
         .btn {
-            padding: 15px 40px; font-size: 16px; border: 1px solid var(--color-primary);
-            background: rgba(0,0,0,0.8); color: var(--color-primary); 
-            border-radius: 30px; cursor: pointer; transition: 0.2s;
-            font-family: inherit; font-weight: bold;
+            padding: 15px 30px; border: 1px solid white; background: rgba(0,0,0,0.7);
+            color: white; border-radius: 30px; font-weight: bold; cursor: pointer;
         }
-        .btn:hover { background: var(--color-primary); color: black; box-shadow: 0 0 30px var(--color-primary); }
+        .btn:hover { background: white; color: black; }
 
-        /* --- PANTALLA INICIAL --- */
-        #inicio {
-            position: fixed; inset: 0; background: black; z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .btn-start {
-            padding: 20px 50px; font-size: 24px; color: white; border: 2px solid white;
-            background: transparent; border-radius: 50px; cursor: pointer;
-            animation: latido 2s infinite;
-        }
-        @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        /* --- RESULTADO FOTO --- */
+        /* FOTO RESULTADO */
         #resultado-foto {
-            position: fixed; inset: 0; background: #050505; z-index: 200;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
+            position: fixed; inset: 0; background: #050505; z-index: 100;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        #canvas-out { 
-            border: 10px solid white; box-shadow: 0 0 50px rgba(255,255,255,0.2); 
-            max-width: 90%; max-height: 70vh;
-        }
+        #foto-final { border: 10px solid white; transform: rotate(-2deg); box-shadow: 0 0 50px rgba(255,255,255,0.3); max-width: 80%; }
+        #desc-final { margin-top: 20px; max-width: 80%; text-align: center; font-family: sans-serif; line-height: 1.4; color: #ccc;}
 
+        /* CAMARA OCULTA */
+        #webcam { position: fixed; opacity: 0; pointer-events: none; }
+
+        /* INICIO */
+        #inicio { position: fixed; inset: 0; background: black; z-index: 999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body>
-
-    <video id="webcam" autoplay playsinline muted></video>
-    
+<body class="mistico"> <video id="webcam" autoplay playsinline muted></video>
     <div id="aura-bg"></div>
 
     <div id="avatar-wrapper">
-        <div class="cabeza" id="cara-avatar">
-            <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="brillo"></div><div class="parpado bottom"></div></div>
-            <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="brillo"></div><div class="parpado bottom"></div></div>
+        <div class="cabeza">
+            <div class="cejas-container">
+                <div class="ceja izq"></div>
+                <div class="ceja der"></div>
+            </div>
+            <div class="ojos-container">
+                <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="parpado bottom"></div></div>
+                <div class="ojo"><div class="parpado top"></div><div class="pupila"></div><div class="parpado bottom"></div></div>
+            </div>
+            <div class="boca-container">
+                <div class="boca"></div>
+            </div>
         </div>
     </div>
 
-    <div id="dialogo"><span id="txt-msg" class="texto-ia">Esperando conexión...</span></div>
+    <div id="dialogo"></div>
 
     <div id="controles">
-        <button class="btn" onclick="responder('SI')">SÍ</button>
-        <button class="btn" onclick="responder('NO')">NO</button>
-        <button class="btn" onclick="responder('NO SÉ')">QUIZÁS</button>
+        <button class="btn" onclick="gestionarRespuesta('SI')">SÍ</button>
+        <button class="btn" onclick="gestionarRespuesta('NO')">NO</button>
+        <button class="btn" onclick="gestionarRespuesta('QUIZÁS')">QUIZÁS</button>
     </div>
 
     <div id="resultado-foto">
-        <canvas id="canvas-out"></canvas>
-        <h2 style="margin-top:20px; color:var(--color-primary);" id="aura-nombre">TU AURA</h2>
-        <button class="btn" onclick="location.reload()" style="margin-top:20px;">REINICIAR</button>
+        <img id="foto-final" src="">
+        <h2 id="titulo-aura" style="color: white; margin-top: 15px;"></h2>
+        <p id="desc-final"></p>
+        <button class="btn" onclick="location.reload()" style="margin-top:20px">OTRA LECTURA</button>
     </div>
 
     <div id="inicio">
-        <button class="btn-start" onclick="despertar()">DESPERTAR ORÁCULO</button>
+        <button class="btn" style="font-size: 24px; padding: 20px 50px;" onclick="iniciarExperiencia()">INICIAR LECTURA</button>
     </div>
 
     <script>
-        // === 1. CONFIGURACIÓN ===
-        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs"; // TU API INTEGRADA
+        // ==========================================
+        // 1. CONFIGURACIÓN Y DATOS LOCALES
+        // ==========================================
+        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs"; // <--- IMPORTANTE
         
+        // BANCO DE PREGUNTAS (Respaldo Local Robustecido)
+        // Cada pregunta afecta a un tipo de aura: [Fuego, Agua, Tierra, Aire]
+        const bancoPreguntas = [
+            { t: "¿Te guías más por el corazón que por la razón?", tipo: "agua" },
+            { t: "¿Perdonas fácilmente una traición?", tipo: "tierra" },
+            { t: "¿Te atrae el caos y la aventura?", tipo: "fuego" },
+            { t: "¿Disfrutas mucho de tu soledad?", tipo: "aire" },
+            { t: "¿Sientes las emociones de otros como tuyas?", tipo: "agua" },
+            { t: "¿Prefieres planear todo antes de actuar?", tipo: "tierra" },
+            { t: "¿Te enojas con facilidad?", tipo: "fuego" },
+            { t: "¿Crees en el destino?", tipo: "aire" },
+            { t: "¿Lloras con las películas?", tipo: "agua" },
+            { t: "¿Eres líder natural en tu grupo?", tipo: "fuego" },
+            { t: "¿Valoras la justicia sobre la piedad?", tipo: "aire" },
+            { t: "¿Te cuesta aceptar los cambios?", tipo: "tierra" }
+        ];
+
+        // RESULTADOS DETALLADOS
+        const perfilesAura = {
+            fuego: { color: "#ff2a00", nombre: "AURA DE FUEGO", desc: "Tienes una energía imparable. Tu pasión mueve montañas, pero ten cuidado de no quemar a quienes te rodean. Eres líder, intenso y transformador." },
+            agua:  { color: "#00b7ff", nombre: "AURA DE AGUA", desc: "Eres empatía pura. Fluyes con las emociones y tienes una intuición que asusta. Tu capacidad de sanar a otros es tu mayor don." },
+            tierra: { color: "#4caf50", nombre: "AURA DE TIERRA", desc: "La estabilidad es tu esencia. Eres el pilar donde otros se apoyan. Práctico, leal y resistente, construyes realidades donde otros solo sueñan." },
+            aire:   { color: "#e040fb", nombre: "AURA DE ETER", desc: "Vives en el mundo de las ideas. Tu mente es rápida y libre. No te atas a nada y ves conexiones que nadie más ve. Eres un visionario." }
+        };
+
+        // VARIABLES DE ESTADO
+        let modoLocal = false; // Se activa si falla Gemini
+        let preguntasSesion = [];
+        let pasoActual = 0;
+        let puntaje = { fuego: 0, agua: 0, tierra: 0, aire: 0 };
+        let historialGemini = [];
         let modeloVision;
-        let historial = []; 
-        let estado = "DURMIENDO"; 
-        
-        // Variables para suavizado de movimiento
-        let targetX = 0, targetY = 0; // Donde está la cara detectada
-        let currentX = 0, currentY = 0; // Donde están mirando los ojos
-        let avatarX = 0, avatarY = 0; // Posición del avatar flotante
-        
+
+        // Elementos DOM
+        const avatar = document.getElementById('avatar-wrapper');
+        const bg = document.getElementById('aura-bg');
+        const txt = document.getElementById('dialogo');
         const video = document.getElementById('webcam');
-        const txt = document.getElementById('txt-msg');
-        const controles = document.getElementById('controles');
-        const avatarWrapper = document.getElementById('avatar-wrapper');
 
-        // === 2. INICIO ===
-        async function despertar() {
-            document.querySelector('.btn-start').innerText = "CONECTANDO...";
-            
+        // ==========================================
+        // 2. INICIO Y MOTORES
+        // ==========================================
+        async function iniciarExperiencia() {
+            document.getElementById('inicio').style.opacity = 0;
+            setTimeout(()=>document.getElementById('inicio').remove(), 1000);
+
+            // Iniciar Audio
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            ac.resume();
+
+            // Iniciar Cámara
             try {
-                // Audio Context para sonido
-                const ac = new (window.AudioContext || window.webkitAudioContext)();
-                await ac.resume();
-
-                // Activar cámara (Invisible pero funcional)
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
                 video.srcObject = stream;
                 await new Promise(r => video.onloadedmetadata = r);
                 video.play();
-
-                // Cargar modelo Face Detection
+                
+                // Iniciar IA Visual (Blazeface)
                 modeloVision = await blazeface.load();
+                loopVision(); // Ojos siguen al usuario
+                
+                // Selección de Preguntas para Modo Local (por si acaso)
+                preguntasSesion = bancoPreguntas.sort(() => 0.5 - Math.random()).slice(0, 4);
 
-                // Ocultar inicio
-                document.getElementById('inicio').style.opacity = 0;
-                setTimeout(() => document.getElementById('inicio').remove(), 1000);
-
-                // Arrancar loops
-                estado = "BUSCANDO";
-                loopOjos();     // Mueve los ojos
-                loopFlotar();   // Mueve el cuerpo del avatar
-                loopParpadeo(); // Parpadeo natural
-
-                // Primera interacción IA
-                setTimeout(() => {
-                    hablarIA("Siento una presencia... Acércate. ¿Cuál es tu nombre?", true);
-                }, 2000);
+                // PRIMER CONTACTO
+                setEmocion('mistico');
+                await hablar("Estoy sintonizando tu frecuencia energética...");
+                setTimeout(() => primerPregunta(), 2000);
 
             } catch (e) {
-                alert("Necesitamos la cámara para ver tu energía (aunque no te veas en pantalla). Error: " + e.message);
+                alert("Error de cámara: " + e.message);
             }
         }
 
-        // === 3. CEREBRO IA (GEMINI) ===
-        async function consultarGemini(inputUsuario, contextoExtra = "") {
-            setExpresion('pensando');
-            
-            // Construir historial
-            if (contextoExtra) historial.push({ role: "user", parts: [{ text: `[SISTEMA]: ${contextoExtra}` }] });
-            historial.push({ role: "user", parts: [{ text: inputUsuario }] });
-
-            // Prompt del sistema para personalidad
-            const sistema = "Eres un Oráculo antiguo y algo cínico pero místico. Tus respuestas son cortas (max 15 palabras). No saludas como un asistente, vas directo al grano. Juzgas el alma del usuario.";
-            
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ role: "user", parts: [{ text: sistema }] }, ...historial],
-                        generationConfig: { maxOutputTokens: 60 }
-                    })
-                });
-
-                const data = await response.json();
-                const respuesta = data.candidates[0].content.parts[0].text;
-                
-                historial.push({ role: "model", parts: [{ text: respuesta }] });
-                return respuesta;
-
-            } catch (e) {
-                console.error(e);
-                return "Las nubes ocultan mi visión... responde con tu instinto.";
-            }
-        }
-
-        // === 4. INTERACCIÓN Y VOZ ===
-        function hablarIA(texto, pedirNombre = false) {
-            txt.classList.remove('visible');
-            setExpresion('sorprendido'); // Abre los ojos al hablar
-
-            setTimeout(() => {
-                txt.innerText = texto;
-                txt.classList.add('visible');
-                
-                // Sintetizador de voz
-                const u = new SpeechSynthesisUtterance(texto);
-                const voces = window.speechSynthesis.getVoices();
-                const voz = voces.find(v => v.lang.includes('es')) || voces[0];
-                if(voz) u.voice = voz;
-                u.pitch = 0.8; u.rate = 1.0;
-                window.speechSynthesis.speak(u);
-
-                u.onend = () => {
-                    setExpresion('neutro');
-                    if (pedirNombre) {
-                        capturarNombre();
-                    } else if (historial.length > 8) { // Finalizar si ya hablaron mucho
-                        finalizarLectura();
-                    } else {
-                        controles.classList.add('activo'); // Mostrar botones
-                    }
-                };
-            }, 300);
-        }
-
-        function capturarNombre() {
-            setTimeout(() => {
-                let n = prompt("Tu nombre, mortal:");
-                let nombre = n || "Desconocido";
-                consultarGemini(nombre, `El usuario se llama ${nombre}. Hazle una pregunta ética difícil para juzgar su aura.`).then(resp => hablarIA(resp));
-            }, 500);
-        }
-
-        function responder(respuesta) {
-            controles.classList.remove('activo');
-            consultarGemini(respuesta, `El usuario respondió ${respuesta}. Si ya tienes suficiente info, di 'VEREDICTO FINAL'. Si no, haz otra pregunta corta.`).then(resp => {
-                if(resp.includes("VEREDICTO") || historial.length > 8) {
-                    finalizarLectura();
-                } else {
-                    hablarIA(resp);
-                }
-            });
-        }
-
-        function finalizarLectura() {
-            hablarIA("He visto suficiente. Quédate quieto para la captura de tu esencia...");
-            setTimeout(() => {
-                // Elegir color basado en azar (o lógica IA si se quisiera expandir)
-                const colores = ["#ff0000", "#00ff00", "#00ccff", "#ffd700", "#800080"];
-                const color = colores[Math.floor(Math.random() * colores.length)];
-                tomarFotoAura(color);
-            }, 4000);
-        }
-
-        // === 5. MOTOR VISUAL (OJOS Y MOVIMIENTO) ===
+        // ==========================================
+        // 3. LÓGICA HÍBRIDA (IA + LOCAL)
+        // ==========================================
         
-        async function loopOjos() {
-            if (modeloVision && video.readyState === 4) {
-                const returnTensors = false;
-                const predictions = await modeloVision.estimateFaces(video, returnTensors);
+        async function primerPregunta() {
+            // Intentamos usar Gemini para el saludo inicial y pregunta 1
+            const prompt = "Eres un oráculo místico. Saluda al usuario brevemente y hazle una pregunta filosófica de SÍ/NO para empezar a leer su aura.";
+            const respuesta = await consultarGemini(prompt);
+            
+            if (respuesta) {
+                // Éxito con Gemini
+                setEmocion('curioso');
+                await hablar(respuesta);
+                mostrarBotones();
+            } else {
+                // Fallo -> Modo Local
+                activarModoLocal();
+            }
+        }
 
-                if (predictions.length > 0) {
-                    // Cara detectada
-                    const p = predictions[0];
-                    // Centro de la cara
-                    const x = (p.topLeft[0] + p.bottomRight[0]) / 2;
-                    const y = (p.topLeft[1] + p.bottomRight[1]) / 2;
+        function gestionarRespuesta(respUser) {
+            ocultarBotones();
+            
+            if (modoLocal) {
+                // Lógica Local
+                procesarRespuestaLocal(respUser);
+            } else {
+                // Lógica Gemini
+                procesarRespuestaGemini(respUser);
+            }
+        }
 
-                    // Normalizar (-1 a 1) e Invertir X (Espejo)
-                    targetX = -1 * ((x / video.videoWidth) - 0.5) * 2; 
-                    targetY = ((y / video.videoHeight) - 0.5) * 2;
+        // --- RUTA GEMINI (PLAN A) ---
+        async function consultarGemini(input) {
+            setEmocion('intenso'); // Cara de pensar
+            try {
+                historialGemini.push({role: "user", parts: [{text: input}]});
 
-                    // Mover al Avatar hacia la cara (Efecto seguimiento)
-                    // Multiplicamos por 20px para que se mueva un poco hacia ti
-                    avatarWrapper.style.transform = `translate(calc(-50% + ${targetX * 30}px), calc(-50% + ${targetY * 30}px))`;
+                // Controller para timeout de 4 segundos
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-                } else {
-                    // Sin cara: volver suavemente al centro
-                    targetX = 0;
-                    targetY = 0;
-                    // Avatar vuelve al centro
-                    avatarWrapper.style.transform = `translate(-50%, -50%)`;
-                }
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: historialGemini,
+                        generationConfig: { maxOutputTokens: 60 }
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) throw new Error("Error API");
+                const data = await res.json();
+                const textoIA = data.candidates[0].content.parts[0].text;
+                
+                historialGemini.push({role: "model", parts: [{text: textoIA}]});
+                return textoIA;
+            } catch (e) {
+                console.log("Fallo Gemini, cambiando a local...", e);
+                return null; // Retorna null para activar fallback
+            }
+        }
+
+        async function procesarRespuestaGemini(respUser) {
+            pasoActual++;
+            
+            // Si ya hicimos 4 preguntas, vamos al final
+            if (pasoActual >= 4) {
+                finalizarExperiencia(true); // true = usar Gemini para veredicto
+                return;
             }
 
-            // Interpolación (Suavizado) de los ojos
-            // Esto evita que los ojos tiemblen
-            currentX += (targetX - currentX) * 0.1;
-            currentY += (targetY - currentY) * 0.1;
+            const prompt = `El usuario respondió ${respUser}. Haz otra pregunta psicológica corta y diferente (max 15 palabras) para juzgar su alma.`;
+            const respuesta = await consultarGemini(prompt);
 
-            // Limitar movimiento (Clamping) para que no se salgan del ojo
-            const limiteX = 35; // px máx movimiento
-            const limiteY = 25; 
-
-            const moveX = currentX * limiteX;
-            const moveY = currentY * limiteY;
-
-            document.querySelectorAll('.pupila').forEach(pupila => {
-                pupila.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-            });
-
-            requestAnimationFrame(loopOjos);
+            if (respuesta) {
+                setEmocion('curioso');
+                await hablar(respuesta);
+                mostrarBotones();
+            } else {
+                activarModoLocal(); // Si falla a mitad, cambiamos a local
+            }
         }
 
-        function loopFlotar() {
-            // Movimiento sinusoidal adicional para que parezca que levita
-            // Se aplica a la cabeza dentro del wrapper
-            const time = Date.now() * 0.001;
-            const flotarY = Math.sin(time) * 10;
-            document.getElementById('cara-avatar').style.marginTop = `${flotarY}px`;
-            requestAnimationFrame(loopFlotar);
-        }
-
-        function loopParpadeo() {
-            const tiempoRandom = Math.random() * 3000 + 2000;
-            setTimeout(() => {
-                document.querySelectorAll('.parpado').forEach(p => p.style.height = "55%"); // Cerrar
-                setTimeout(() => {
-                    // Restaurar según estado actual
-                    const topH = document.body.classList.contains('sospecha') ? "35%" : 
-                                 document.body.classList.contains('sorprendido') ? "0%" : "5%";
-                    document.querySelectorAll('.parpado.top').forEach(p => p.style.height = topH);
-                    document.querySelectorAll('.parpado.bottom').forEach(p => p.style.height = "5%");
-                }, 150); // Abrir rápido
-                loopParpadeo();
-            }, tiempoRandom);
-        }
-
-        function setExpresion(clase) {
-            const cara = document.getElementById('cara-avatar');
-            cara.className = "cabeza " + clase;
-            document.body.className = clase; // Para helpers globales
-        }
-
-        // === 6. FOTO FINAL (AURA SNAP) ===
-        function tomarFotoAura(colorAura) {
-            const canvas = document.getElementById('canvas-out');
-            const ctx = canvas.getContext('2d');
+        // --- RUTA LOCAL (PLAN B - FALLBACK) ---
+        function activarModoLocal() {
+            console.log("ACTIVANDO MODO LOCAL");
+            modoLocal = true;
+            // Si cambiamos a mitad, ajustamos el índice para seguir desde donde estabamos
+            if (pasoActual >= 4) { finalizarExperiencia(false); return; }
             
-            // Configurar tamaño
-            canvas.width = 640; canvas.height = 480;
+            lanzarPreguntaLocal();
+        }
 
-            // 1. Dibujar Webcam (Espejo)
+        async function lanzarPreguntaLocal() {
+            setEmocion('curioso');
+            const preg = preguntasSesion[pasoActual];
+            await hablar(preg.t);
+            mostrarBotones();
+        }
+
+        function procesarRespuestaLocal(respUser) {
+            // Calcular puntaje
+            const tipoActual = preguntasSesion[pasoActual].tipo;
+            if (respUser === 'SI') puntaje[tipoActual] += 2;
+            if (respUser === 'QUIZÁS') puntaje[tipoActual] += 1;
+            
+            pasoActual++;
+
+            if (pasoActual >= 4) {
+                finalizarExperiencia(false);
+            } else {
+                lanzarPreguntaLocal();
+            }
+        }
+
+        // ==========================================
+        // 4. CONCLUSIÓN Y FOTO
+        // ==========================================
+        async function finalizarExperiencia(usarIA) {
+            setEmocion('intenso');
+            await hablar("He visto suficiente. Tu energía se revela ante mí...");
+            
+            setTimeout(async () => {
+                let resultadoFinal;
+
+                if (usarIA) {
+                    // Pedir veredicto a Gemini
+                    const veredicto = await consultarGemini("Dame el veredicto final del aura en formato JSON simple: { \"color\": \"#hex\", \"titulo\": \"NOMBRE\", \"desc\": \"Descripcion corta\" }");
+                    try {
+                        // Intentar limpiar el JSON (Gemini a veces pone ```json ... ```)
+                        const jsonStr = veredicto.replace(/```json|```/g, '').trim();
+                        resultadoFinal = JSON.parse(jsonStr);
+                    } catch (e) {
+                        // Si falla el parseo, calcular localmente
+                        resultadoFinal = calcularGanadorLocal();
+                    }
+                } else {
+                    resultadoFinal = calcularGanadorLocal();
+                }
+
+                // MOSTRAR RESULTADO
+                setEmocion('feliz');
+                // Cambiar fondo al color del aura
+                document.body.style.background = resultadoFinal.color; 
+                document.getElementById('aura-bg').style.background = `radial-gradient(circle, ${resultadoFinal.color}, #000)`;
+
+                await hablar(`Tu aura es... ${resultadoFinal.titulo}`);
+                tomarFoto(resultadoFinal);
+
+            }, 2000);
+        }
+
+        function calcularGanadorLocal() {
+            // Buscar el puntaje más alto
+            let max = 0;
+            let tipoGanador = 'fuego'; // default
+            for (const [tipo, valor] of Object.entries(puntaje)) {
+                if (valor > max) { max = valor; tipoGanador = tipo; }
+            }
+            // Retornar objeto completo del perfil
+            return {
+                color: perfilesAura[tipoGanador].color,
+                titulo: perfilesAura[tipoGanador].nombre,
+                desc: perfilesAura[tipoGanador].desc
+            };
+        }
+
+        function tomarFoto(dataAura) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 480; canvas.height = 640;
+            const ctx = canvas.getContext('2d');
+
+            // 1. Video (espejo)
             ctx.save();
             ctx.scale(-1, 1);
-            ctx.drawImage(video, -640, 0, 640, 480);
+            ctx.drawImage(video, -480, 0, 480, 640);
             ctx.restore();
 
-            // 2. Efecto Blanco y Negro de alto contraste para misticismo
-            let imgData = ctx.getImageData(0,0,640,480);
-            // (Podríamos aplicar filtros complejos aquí, pero usaremos CSS blend modes sobre el canvas)
+            // 2. Filtro Aura
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.fillStyle = dataAura.color;
+            ctx.fillRect(0,0,480,640);
             
-            // 3. Superponer Aura
-            ctx.globalCompositeOperation = "color"; // Colorea la imagen
-            ctx.fillStyle = colorAura;
-            ctx.fillRect(0,0,640,480);
-
-            ctx.globalCompositeOperation = "screen"; // Brillo
-            const grad = ctx.createRadialGradient(320, 240, 100, 320, 240, 400);
-            grad.addColorStop(0, colorAura);
+            // 3. Marco suave
+            ctx.globalCompositeOperation = 'destination-in';
+            const grad = ctx.createRadialGradient(240,320, 200, 240,320, 400);
+            grad.addColorStop(0, "white");
             grad.addColorStop(1, "transparent");
             ctx.fillStyle = grad;
-            ctx.fillRect(0,0,640,480);
+            ctx.fillRect(0,0,480,640);
 
-            // Mostrar
+            // Mostrar en pantalla
+            document.getElementById('foto-final').src = canvas.toDataURL('image/png');
+            document.getElementById('foto-final').style.borderColor = dataAura.color;
+            document.getElementById('titulo-aura').innerText = dataAura.titulo;
+            document.getElementById('titulo-aura').style.color = dataAura.color;
+            document.getElementById('desc-final').innerText = dataAura.desc;
+            
+            document.getElementById('avatar-wrapper').style.display = 'none';
             document.getElementById('resultado-foto').style.display = 'flex';
-            document.getElementById('aura-nombre').innerText = "TU AURA ES " + getColorName(colorAura);
-            document.getElementById('aura-nombre').style.color = colorAura;
         }
 
-        function getColorName(hex) {
-            if(hex.includes("ff0000")) return "FUEGO (PASIÓN)";
-            if(hex.includes("00ff00")) return "GAIA (SANACIÓN)";
-            if(hex.includes("00ccff")) return "ÉTER (SABIDURÍA)";
-            if(hex.includes("ffd700")) return "SOLAR (PODER)";
-            return "MÍSTICA";
+        // ==========================================
+        // 5. ANIMACIONES Y UTILIDADES
+        // ==========================================
+        function setEmocion(emocion) {
+            document.body.className = emocion; // Cambia variables CSS y posiciones
+        }
+
+        function mostrarBotones() { document.getElementById('controles').classList.add('activo'); }
+        function ocultarBotones() { document.getElementById('controles').classList.remove('activo'); }
+
+        function hablar(texto) {
+            return new Promise(resolve => {
+                txt.innerText = texto;
+                const u = new SpeechSynthesisUtterance(texto);
+                const voces = window.speechSynthesis.getVoices();
+                const voz = voces.find(v => v.lang.includes('es'));
+                if(voz) u.voice = voz;
+                u.rate = 1.0;
+                u.onend = resolve;
+                window.speechSynthesis.speak(u);
+            });
+        }
+
+        // Loop de Visión (Seguimiento de ojos)
+        async function loopVision() {
+            if (modeloVision) {
+                const preds = await modeloVision.estimateFaces(video, false);
+                if (preds.length > 0) {
+                    const p = preds[0];
+                    const x = (p.topLeft[0] + p.bottomRight[0]) / 2;
+                    const y = (p.topLeft[1] + p.bottomRight[1]) / 2;
+                    // Mover pupilas
+                    const relX = 1 - (x / video.videoWidth); 
+                    const relY = y / video.videoHeight;
+                    document.querySelectorAll('.pupila').forEach(pup => {
+                        pup.style.transform = `translate(calc(-50% + ${(relX-0.5)*40}px), calc(-50% + ${(relY-0.5)*30}px))`;
+                    });
+                }
+            }
+            requestAnimationFrame(loopVision);
         }
 
     </script>
