@@ -1,281 +1,494 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
-<title>Oráculo Social IA v72</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oráculo Empático v100</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 
-<!-- TF + BlazeFace -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <style>
+        /* --- ESTÉTICA GENERAL --- */
+        :root { --color-primary: #00f7ff; --color-bg: #050510; }
+        body { 
+            margin: 0; height: 100vh; overflow: hidden; 
+            background: var(--color-bg); 
+            font-family: 'Montserrat', sans-serif; 
+            color: white; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
 
-<style>
-body{
-  margin:0;
-  height:100vh;
-  overflow:hidden;
-  background:#000;
-  font-family:'Segoe UI',sans-serif;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+        /* CÁMARA INVISIBLE (Pero funcional para la IA) */
+        #webcam { position: fixed; opacity: 0; pointer-events: none; z-index: -10; }
 
-#webcam{
-  position:fixed;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transform:scaleX(-1);
-  opacity:.4;
-}
+        /* FONDO DINÁMICO */
+        #aura-bg {
+            position: fixed; inset: 0; 
+            background: radial-gradient(circle at 50% 50%, #1a237e, #000);
+            z-index: 0; transition: background 2s ease-in-out;
+        }
+        #particulas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
-#fondo{
-  position:fixed;
-  inset:0;
-  background:radial-gradient(circle,#0d47a1,#000);
-  mix-blend-mode:hard-light;
-}
+        /* --- AVATAR EXPRESIVO --- */
+        #avatar-container {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+            animation: flotar 4s ease-in-out infinite;
+            transition: transform 0.5s;
+        }
+        @keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-#ui{
-  position:relative;
-  z-index:10;
-  text-align:center;
-  max-width:90%;
-}
+        /* Cabeza/Ojos */
+        .cabeza { display: flex; gap: 40px; position: relative; }
+        .ojo {
+            width: 130px; height: 180px; background: white;
+            border-radius: 50%; position: relative; overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 247, 255, 0.2);
+            border: 4px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .pupila {
+            width: 45px; height: 55px; background: #000;
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            transition: transform 0.1s cubic-bezier(0.1, 0.8, 0.5, 1);
+        }
+        .brillo { width: 12px; height: 12px; background: white; border-radius: 50%; position: absolute; top: 25%; right: 25%; }
 
-#dialogo{
-  font-size:24px;
-  margin-top:20px;
-  min-height:80px;
-}
+        /* Párpados (Parpadeo) */
+        .parpado { position: absolute; width: 100%; background: #000; left: 0; transition: height 0.1s; z-index: 10; }
+        .top { top: 0; height: 5%; } .bottom { bottom: 0; height: 5%; }
+        
+        /* CEJAS (NUEVO: Para Expresividad) */
+        .ceja-container { position: absolute; top: -50px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; }
+        .ceja {
+            width: 100px; height: 20px; background: white; border-radius: 10px;
+            box-shadow: 0 0 20px var(--color-primary);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
 
-button{
-  margin-top:20px;
-  padding:15px 35px;
-  border-radius:30px;
-  border:1px solid white;
-  background:rgba(0,0,0,.6);
-  color:white;
-  cursor:pointer;
-}
+        /* --- ESTADOS EMOCIONALES (Clases CSS) --- */
+        /* Enojado / Analítico */
+        .analizando .ceja.izq { transform: rotate(20deg) translateY(10px); }
+        .analizando .ceja.der { transform: rotate(-20deg) translateY(10px); }
+        .analizando .ojo { transform: scaleY(0.9); }
+        
+        /* Sorpresa / Feliz */
+        .feliz .ceja { transform: translateY(-20px); }
+        .feliz .ojo { transform: scale(1.1); box-shadow: 0 0 80px #ffd700; }
+        
+        /* Triste / Empático */
+        .triste .ceja.izq { transform: rotate(-15deg); }
+        .triste .ceja.der { transform: rotate(15deg); }
 
-#sensor{
-  display:none;
-  position:fixed;
-  bottom:40px;
-  width:90px;
-  height:90px;
-  border-radius:50%;
-  border:2px solid white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-</style>
+        /* Pensando (Un ojo cerrado, ceja levantada) */
+        .pensando .ceja.izq { transform: translateY(-15px); }
+        .pensando .ceja.der { transform: translateY(10px); }
+        .pensando .ojo:last-child .top { height: 40%; }
+
+        /* --- UI TEXTO --- */
+        #dialogo-box {
+            position: fixed; top: 20%; width: 100%; text-align: center; z-index: 20;
+            pointer-events: none;
+        }
+        #texto-principal {
+            font-size: 28px; font-weight: 300; color: white;
+            text-shadow: 0 2px 10px black; max-width: 800px; margin: 0 auto;
+            background: rgba(0,0,0,0.4); padding: 15px 30px; border-radius: 20px;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+            transition: opacity 0.5s; opacity: 0; transform: translateY(20px);
+        }
+        .mostrar-texto { opacity: 1 !important; transform: translateY(0) !important; }
+
+        /* --- BOTONES Y SENSOR --- */
+        #interaccion { position: fixed; bottom: 20%; display: none; gap: 20px; z-index: 50; }
+        .btn {
+            padding: 15px 50px; font-size: 18px; border: 2px solid white;
+            background: rgba(255,255,255,0.1); color: white; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; font-weight: bold;
+        }
+        .btn:hover { background: white; color: black; box-shadow: 0 0 30px white; }
+
+        #sensor {
+            position: fixed; bottom: 50px; width: 100px; height: 100px;
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+            font-size: 40px; cursor: pointer; z-index: 100;
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+            animation: latido 2s infinite;
+        }
+        @keyframes latido { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { transform: scale(1); } }
+
+        /* PANTALLA INICIO */
+        #inicio-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #btn-start { padding: 25px 70px; font-size: 22px; border: 3px solid #00f7ff; color: #00f7ff; background: transparent; border-radius: 60px; cursor: pointer; letter-spacing: 2px; transition: 0.3s; font-weight: bold; text-transform: uppercase; }
+        #btn-start:hover { background: #00f7ff; color: black; box-shadow: 0 0 50px #00f7ff; }
+
+    </style>
 </head>
-
 <body>
 
-<video id="webcam" autoplay playsinline muted></video>
-<div id="fondo"></div>
+    <video id="webcam" autoplay playsinline muted></video>
+    
+    <div id="aura-bg"></div>
+    <canvas id="particulas"></canvas>
 
-<div id="ui">
-  <div id="status">ESPERANDO INICIO</div>
-  <div id="dialogo"></div>
-  <button onclick="iniciar()">INICIAR</button>
-</div>
+    <div id="avatar-container">
+        <div class="ceja-container">
+            <div class="ceja izq"></div>
+            <div class="ceja der"></div>
+        </div>
+        <div class="cabeza">
+            <div class="ojo"><div class="parpado top"></div><div class="pupila"><div class="brillo"></div></div><div class="parpado bottom"></div></div>
+            <div class="ojo"><div class="parpado top"></div><div class="pupila"><div class="brillo"></div></div><div class="parpado bottom"></div></div>
+        </div>
+    </div>
 
-<div id="sensor">👆</div>
+    <div id="dialogo-box"><div id="texto-principal"></div></div>
 
+    <div id="interaccion">
+        <button class="btn" onclick="responder(true)">ACEPTAR</button>
+        <button class="btn" onclick="responder(false)">AHORA NO</button>
+    </div>
 
-<script type="module">
+    <div id="sensor" onmousedown="tocarSensor()" ontouchstart="tocarSensor()" onmouseup="soltarSensor()" ontouchend="soltarSensor()">👆</div>
 
-/* =========================
-   GEMINI DIRECTO (LOCAL)
-========================= */
+    <div id="inicio-screen">
+        <button id="btn-start" onclick="iniciarExperiencia()">DESPERTAR AL ORÁCULO</button>
+    </div>
 
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    <script>
+        // === CONFIGURACIÓN ===
+        const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs";
+        
+        // Variables Globales
+        let estado = "OFF"; // OFF, BUSCANDO, CHARLA, RESULTADO
+        let modeloVision;
+        let isSpeaking = false;
+        let nombreUsuario = "Viajero";
+        let ultimoParpadeo = 0;
+        let modoFallo = false; // Se activa si Gemini falla para usar el guion local
 
-const API_KEY = "AIzaSyBlJGQaWafqiSuituKURcRriR3t18YBnOs";
+        // Elementos
+        const avatar = document.getElementById('avatar-container');
+        const fondo = document.getElementById('aura-bg');
+        const txt = document.getElementById('texto-principal');
+        const video = document.getElementById('webcam');
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+        // --- 1. MOTOR DE INICIO ---
+        async function iniciarExperiencia() {
+            const btn = document.getElementById('btn-start');
+            btn.innerText = "SINTONIZANDO ENERGÍA...";
+            btn.style.opacity = 0.5;
 
-const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash"
-});
+            try {
+                // Audio Unlock
+                const ac = new (window.AudioContext || window.webkitAudioContext)();
+                await ac.resume();
 
-async function pedirGemini(prompt){
-  try{
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  }catch(e){
-    console.error("Gemini:",e);
-    return "Las energías están inestables...";
-  }
-}
+                // Cámara (Oculta pero activa)
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                video.srcObject = stream;
+                await new Promise(r => video.onloadedmetadata = r);
+                video.play();
 
+                // Cargar IA Visión
+                modeloVision = await blazeface.load();
 
-/* =========================
-   ELEMENTOS
-========================= */
+                // Quitar pantalla inicio
+                document.getElementById('inicio-screen').style.opacity = 0;
+                setTimeout(() => document.getElementById('inicio-screen').style.display = 'none', 1000);
 
-const video = document.getElementById("webcam");
-const dialogo = document.getElementById("dialogo");
-const status = document.getElementById("status");
-const sensor = document.getElementById("sensor");
+                // Arrancar sistemas
+                estado = "BUSCANDO";
+                mostrarTexto("Buscando presencia...");
+                setEmocion('neutro');
+                cambiarFondo('#1a237e'); // Azul místico
+                
+                loopOjos();
+                loopVision();
+                initParticulas();
 
-let modeloCara;
-let estado="OFF";
-let nombre="Viajero";
+            } catch (e) {
+                alert("Error: " + e.message);
+                btn.innerText = "ERROR DE CONEXIÓN";
+            }
+        }
 
+        // --- 2. CEREBRO HÍBRIDO (GEMINI + LOCAL) ---
+        async function consultarOraculo(promptContexto) {
+            setEmocion('pensando');
+            cambiarFondo('#4a148c'); // Violeta pensando
+            
+            // Si ya falló antes, ir directo a local
+            if(modoFallo) return respuestaLocal(promptContexto);
 
-/* =========================
-   VOZ
-========================= */
+            try {
+                // Fetch directo para evitar errores de librería
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptContexto }] }] })
+                });
 
-let voz=null;
+                if (!response.ok) throw new Error("API Error");
 
-speechSynthesis.onvoiceschanged = ()=>{
-  voz = speechSynthesis.getVoices().find(v=>v.lang.includes("es")) || null;
-};
+                const data = await response.json();
+                const respuesta = data.candidates[0].content.parts[0].text;
+                
+                setEmocion('feliz'); // Éxito
+                return respuesta;
 
-function hablar(txt,cb){
-  dialogo.innerText = txt;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(txt);
-  if(voz) u.voice = voz;
-  u.onend = ()=>cb && cb();
-  speechSynthesis.speak(u);
-}
+            } catch (e) {
+                console.warn("Gemini falló, activando modo local:", e);
+                modoFallo = true; // Activar modo seguro
+                return respuestaLocal(promptContexto);
+            }
+        }
 
+        function respuestaLocal(trigger) {
+            // Guion de respaldo inteligente para que no se trabe
+            if(trigger.includes("Saluda")) return "Siento una energía vibrante frente a mí. ¿Cuál es tu nombre?";
+            if(trigger.includes("Invítalo")) return `Un placer, ${nombreUsuario}. ¿Me permites leer los secretos de tu aura?`;
+            if(trigger.includes("pregunta")) return "¿Te guías más por la razón o por la intuición?";
+            if(trigger.includes("sensor")) return "Ya veo lo suficiente. Coloca tu dedo en el sensor para finalizar.";
+            if(trigger.includes("Veredicto")) return "Tu aura es Dorada. Veo gran éxito y sabiduría en tu futuro cercano.";
+            return "Las estrellas me susurran tu destino.";
+        }
 
-/* =========================
-   ESCUCHA
-========================= */
+        // --- 3. FLUJO DE INTERACCIÓN (CORE) ---
+        
+        // BUCLE VISUAL
+        async function loopVision() {
+            if(estado === "OFF") return;
 
-function escuchar(cb){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (modeloVision && video.readyState === 4) {
+                const preds = await modeloVision.estimateFaces(video, false);
 
-  if(!SR){
-    const r = prompt("Escribe tu respuesta:");
-    cb(r);
-    return;
-  }
+                if (preds.length > 0) {
+                    // Mover Ojos
+                    const p = preds[0];
+                    const x = (p.topLeft[0] + p.bottomRight[0]) / 2;
+                    const y = (p.topLeft[1] + p.bottomRight[1]) / 2;
+                    moverPupilas(x, y);
 
-  const rec = new SR();
-  rec.lang="es-MX";
+                    // Detectar Cercanía
+                    if(estado === "BUSCANDO") {
+                        const ancho = p.bottomRight[0] - p.topLeft[0];
+                        if(ancho > 50) { // Si está cerca
+                            iniciarConversacion();
+                        }
+                    }
+                } else {
+                    centrarPupilas();
+                }
+            }
+            requestAnimationFrame(loopVision);
+        }
 
-  rec.onresult = e=>{
-    cb(e.results[0][0].transcript);
-  };
+        async function iniciarConversacion() {
+            estado = "CHARLANDO";
+            setEmocion('sorpresa');
+            cambiarFondo('#006064'); // Cian activo
 
-  rec.start();
-}
+            let saludo = await consultarOraculo("Un usuario acaba de aparecer. Salúdalo misticamente (max 10 palabras) y pide su nombre.");
+            
+            hablar(saludo, () => {
+                escuchar(nombre => {
+                    nombreUsuario = nombre || "Amigo";
+                    setEmocion('feliz');
+                    
+                    consultarOraculo(`El usuario es ${nombreUsuario}. Invítalo a leer su aura.`).then(inv => {
+                        hablar(inv, () => {
+                            document.getElementById('interaccion').style.display = 'flex';
+                            setEmocion('neutro');
+                        });
+                    });
+                });
+            });
+        }
 
+        window.responder = function(acepta) {
+            document.getElementById('interaccion').style.display = 'none';
+            if(acepta) {
+                consultarOraculo("El usuario aceptó. Hazle una pregunta filosófica breve.").then(preg => {
+                    setEmocion('analizando');
+                    hablar(preg, flujoPreguntas);
+                });
+            } else {
+                setEmocion('triste');
+                hablar("El destino te esperará. Adiós.", reiniciar);
+            }
+        };
 
-/* =========================
-   CÁMARA + DETECCIÓN
-========================= */
+        function flujoPreguntas() {
+            escuchar(resp => {
+                setEmocion('pensando');
+                // Lógica de decisión
+                consultarOraculo(`Usuario dijo: "${resp}". Si es suficiente info, di 'USA EL SENSOR'. Si no, haz otra pregunta breve.`).then(ia => {
+                    if(ia.toUpperCase().includes("SENSOR")) {
+                        setEmocion('feliz');
+                        hablar("He visto tu interior. Coloca tu dedo en el sensor.", () => {
+                            document.getElementById('sensor').style.display = 'flex';
+                        });
+                    } else {
+                        setEmocion('neutro');
+                        hablar(ia, flujoPreguntas);
+                    }
+                });
+            });
+        }
 
-async function iniciar(){
+        // --- 4. SENSOR FINAL ---
+        window.tocarSensor = function() {
+            const s = document.getElementById('sensor');
+            s.style.transform = "scale(0.9)";
+            s.style.boxShadow = "0 0 80px white";
+            mostrarTexto("CONECTANDO ALMA...");
+            sonidoFinal();
+            
+            setTimeout(() => {
+                s.style.display = 'none';
+                consultarOraculo("Veredicto final: Color de aura (Rojo/Azul/Dorado) y predicción futura.").then(fin => {
+                    
+                    // Explosión de color según respuesta
+                    let color = "#fff";
+                    if(fin.includes("Rojo")) color = "#d50000";
+                    if(fin.includes("Azul")) color = "#2962ff";
+                    if(fin.includes("Dorado")) color = "#ffd600";
+                    
+                    cambiarFondo(color);
+                    setEmocion('feliz');
+                    
+                    hablar(fin, () => {
+                        setTimeout(reiniciar, 8000);
+                    });
+                });
+            }, 3000);
+        }
+        window.soltarSensor = function() { document.getElementById('sensor').style.transform = "scale(1)"; }
 
-  status.innerText="CARGANDO...";
+        function reiniciar() {
+            estado = "BUSCANDO";
+            mostrarTexto("BUSCANDO PRESENCIA...");
+            cambiarFondo('#1a237e');
+            setEmocion('neutro');
+        }
 
-  const stream = await navigator.mediaDevices.getUserMedia({video:true});
-  video.srcObject=stream;
+        // --- 5. SISTEMAS DE EXPRESIÓN ---
+        
+        function setEmocion(emocion) {
+            avatar.className = ""; // Limpiar
+            avatar.classList.add(emocion);
+        }
 
-  modeloCara = await blazeface.load();
+        function cambiarFondo(color) {
+            fondo.style.background = `radial-gradient(circle at 50% 50%, ${color}, #000)`;
+        }
 
-  estado="BUSCANDO";
+        function moverPupilas(x, y) {
+            // Invertir X (espejo) y suavizar
+            const relX = 1 - (x / video.videoWidth); 
+            const relY = y / video.videoHeight;
+            
+            document.querySelectorAll('.pupila').forEach(p => {
+                p.style.transform = `translate(calc(-50% + ${(relX - 0.5) * 50}px), calc(-50% + ${(relY - 0.5) * 40}px))`;
+            });
+        }
 
-  detectar();
+        function centrarPupilas() {
+            document.querySelectorAll('.pupila').forEach(p => p.style.transform = "translate(-50%, -50%)");
+        }
 
-  status.innerText="ACÉRCATE";
-}
+        function loopOjos() {
+            // Parpadeo natural aleatorio
+            if (Date.now() - ultimoParpadeo > Math.random() * 4000 + 2000) {
+                document.querySelectorAll('.parpado').forEach(p => {
+                    p.style.height = "50%"; // Cerrar
+                    setTimeout(() => p.style.height = "", 150); // Abrir
+                });
+                ultimoParpadeo = Date.now();
+            }
+            requestAnimationFrame(loopOjos);
+        }
 
+        function hablar(texto, callback) {
+            mostrarTexto(texto);
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(texto);
+            const voces = window.speechSynthesis.getVoices();
+            // Buscar voz en español
+            const voz = voces.find(v => v.lang.startsWith('es'));
+            if(voz) u.voice = voz;
+            u.rate = 1.0;
+            
+            u.onstart = () => isSpeaking = true;
+            u.onend = () => { isSpeaking = false; if(callback) callback(); };
+            window.speechSynthesis.speak(u);
+        }
 
-async function detectar(){
+        function escuchar(callback) {
+            if(isSpeaking) return;
+            mostrarTexto("Escuchando tu voz...");
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SpeechRecognition) {
+                // Fallback elegante
+                setTimeout(() => {
+                    let r = prompt("Escribe tu respuesta:");
+                    callback(r || "...");
+                }, 500);
+                return;
+            }
 
-  if(estado==="OFF") return;
+            const rec = new SpeechRecognition();
+            rec.lang = 'es-MX';
+            rec.start();
+            rec.onresult = (e) => callback(e.results[0][0].transcript);
+            rec.onerror = () => callback("..."); 
+        }
 
-  if(video.readyState >= 2){
-    const preds = await modeloCara.estimateFaces(video,false);
+        function mostrarTexto(t) {
+            txt.innerText = t;
+            txt.classList.add('mostrar-texto');
+        }
 
-    if(preds.length>0 && estado==="BUSCANDO"){
-      estado="CHARLANDO";
-      flujoInicio();
-    }
-  }
+        function sonidoFinal() {
+            try {
+                const ac = new AudioContext();
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.connect(gain); gain.connect(ac.destination);
+                osc.frequency.setValueAtTime(200, ac.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, ac.currentTime + 3);
+                gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 3);
+                osc.start(); osc.stop(ac.currentTime + 3);
+            } catch(e){}
+        }
 
-  requestAnimationFrame(detectar);
-}
+        // --- PARTÍCULAS ---
+        function initParticulas() {
+            const c = document.getElementById('particulas');
+            const x = c.getContext('2d');
+            c.width = window.innerWidth; c.height = window.innerHeight;
+            let p = Array.from({length: 50}, () => ({
+                x: Math.random()*c.width, y: Math.random()*c.height,
+                vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5, s: Math.random()*2
+            }));
+            function l() {
+                x.clearRect(0,0,c.width,c.height);
+                x.fillStyle="rgba(255,255,255,0.3)";
+                p.forEach(i => {
+                    i.x+=i.vx; i.y+=i.vy;
+                    if(i.x<0||i.x>c.width) i.vx*=-1; if(i.y<0||i.y>c.height) i.vy*=-1;
+                    x.beginPath(); x.arc(i.x,i.y,i.s,0,Math.PI*2); x.fill();
+                });
+                requestAnimationFrame(l);
+            }
+            l();
+        }
 
-
-/* =========================
-   FLUJO SOCIAL
-========================= */
-
-async function flujoInicio(){
-
-  const saludo = await pedirGemini("Saluda de forma cálida y pregunta el nombre.");
-  hablar(saludo,()=>{
-    escuchar(async r=>{
-      nombre=r||"Viajero";
-
-      const inv = await pedirGemini(`Su nombre es ${nombre}. Invítalo a participar en una lectura de aura.`);
-      hablar(inv,()=>{
-        flujoPreguntas();
-      });
-    });
-  });
-}
-
-
-async function flujoPreguntas(){
-
-  let preguntas=4;
-
-  const hacer=async()=>{
-    if(preguntas<=0){
-      sensor.style.display="flex";
-      hablar("Coloca tu dedo para analizar tu energía.");
-      return;
-    }
-
-    const p = await pedirGemini("Haz una pregunta reflexiva breve.");
-    hablar(p,()=>{
-      escuchar(async r=>{
-        preguntas--;
-        hacer();
-      });
-    });
-  }
-
-  hacer();
-}
-
-
-/* =========================
-   SENSOR AURA
-========================= */
-
-sensor.addEventListener("click",async()=>{
-
-  sensor.style.display="none";
-  status.innerText="ANALIZANDO AURA...";
-
-  const res = await pedirGemini(`Describe el aura de ${nombre} con color y cumplido positivo.`);
-
-  hablar(res,()=>{
-    estado="BUSCANDO";
-    status.innerText="ACÉRCATE";
-  });
-
-});
-
-</script>
+    </script>
 </body>
 </html>
