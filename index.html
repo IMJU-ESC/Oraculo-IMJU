@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cupido IMJU Escuinapa - Final</title>
+    <title>Cupido IMJU Escuinapa - Final V13</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* EMOJIS FLOTANTES (Escuinapa Vibes) */
+        /* EMOJIS FLOTANTES */
         .emoji-float {
             position: absolute; bottom: -50px; font-size: 2.5rem; opacity: 0.2;
             animation: subir 9s linear infinite; pointer-events: none; z-index: 0;
@@ -50,8 +50,8 @@
 
         /* --- AVATAR GIGANTE --- */
         #avatar-container { 
-            position: relative; width: 550px; height: 450px; /* TAMAÑO MAXIMIZADO */
-            z-index: 10; margin-bottom: 20px; margin-top: 50px;
+            position: relative; width: 550px; height: 450px;
+            z-index: 10; margin-bottom: 10px; margin-top: 60px;
         }
         
         #cabeza {
@@ -70,7 +70,7 @@
         /* Ojos */
         .ojos-row { display: flex; gap: 60px; margin-top: 60px; z-index: 2; }
         .ojo-wrapper {
-            width: 150px; height: 150px; /* Ojos grandes */
+            width: 150px; height: 150px; 
             position: relative; overflow: hidden; border-radius: 50%;
             background: white; border: 6px solid rgba(0,0,0,0.05); transition: 0.3s;
         }
@@ -89,39 +89,33 @@
             margin-top: 70px; transition: 0.3s; 
         }
 
-        /* --- EXPRESIONES FLUIDAS --- */
-        
-        /* Hablando (boca se mueve, cejas rebotan) */
+        /* --- EXPRESIONES --- */
         .hablando .boca { width: 100px; height: 70px; border-radius: 40% 40% 50% 50%; animation: hablarAnim 0.2s infinite alternate; }
         .hablando .ceja { animation: cejasHablando 0.5s infinite alternate; }
         @keyframes hablarAnim { from { height: 30px; transform: scaleY(0.8); } to { height: 70px; transform: scaleY(1); } }
         @keyframes cejasHablando { from { transform: translateY(0); } to { transform: translateY(-5px); } }
 
-        /* Sospecha / Pensando (Una ceja arriba, ojos entrecerrados) */
-        .sospecha .ceja:first-child { transform: rotate(15deg) translateY(10px); } /* Ceja baja */
-        .sospecha .ceja:last-child { transform: rotate(-15deg) translateY(-20px); } /* Ceja sube */
-        .sospecha .ojo-wrapper { height: 120px; border-radius: 40%; margin-top: 15px; } /* Ojos achinados */
+        .sospecha .ceja:first-child { transform: rotate(15deg) translateY(10px); }
+        .sospecha .ceja:last-child { transform: rotate(-15deg) translateY(-20px); }
+        .sospecha .ojo-wrapper { height: 120px; border-radius: 40%; margin-top: 15px; }
         .sospecha .boca { width: 60px; transform: translateX(10px) rotate(-5deg); }
 
-        /* Sorpresa (Ojos gigantes, boca O) */
         .sorpresa .ceja { transform: translateY(-50px) scaleX(1.1); }
         .sorpresa .ojo-wrapper { transform: scale(1.15); border-color: #ff006e; }
         .sorpresa .boca { width: 70px; height: 70px; border-radius: 50%; margin-top: 80px; }
 
-        /* Feliz (Ojos contentos, sonrisa) */
-        .feliz .ojo-wrapper { height: 80px; margin-top: 35px; border-radius: 10px 10px 100px 100px; } /* Ojos en U invertida */
+        .feliz .ojo-wrapper { height: 80px; margin-top: 35px; border-radius: 10px 10px 100px 100px; }
         .feliz .boca { width: 110px; height: 50px; border-radius: 10px 10px 100px 100px; margin-top: 60px; }
         .feliz .ceja { transform: translateY(-10px); }
 
-        /* Enamorado (Corazones) */
         .enamorado .ojo-wrapper { background: #ff006e; }
         .enamorado .pupila, .enamorado .brillo { opacity: 0; }
         .enamorado .ojo-wrapper::after { content:'😍'; font-size:100px; position:absolute; top:20px; left:25px; animation: latido 0.8s infinite; }
 
         /* --- UI TEXTO --- */
         #texto-globo {
-            background: white; color: #222; padding: 30px 40px;
-            border-radius: 50px; font-size: 2rem; text-align: center; max-width: 90%;
+            background: white; color: #222; padding: 25px 40px;
+            border-radius: 50px; font-size: 1.8rem; text-align: center; max-width: 90%;
             box-shadow: 0 15px 0 rgba(0,0,0,0.1); font-weight: bold; margin-bottom: 20px;
             min-height: 100px; display: flex; align-items: center; justify-content: center;
             border: 6px solid white; transform: scale(0.9); opacity: 0; transition: 0.4s;
@@ -133,7 +127,7 @@
         /* --- BOTONES --- */
         #botones-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 95%; z-index: 20; }
         .btn {
-            padding: 25px 50px; font-size: 1.6rem; border: none; border-radius: 60px;
+            padding: 25px 45px; font-size: 1.6rem; border: none; border-radius: 60px;
             cursor: pointer; font-family: 'Fredoka', sans-serif; font-weight: bold;
             transition: 0.1s; box-shadow: 0 10px 0 rgba(0,0,0,0.2); opacity: 0; transform: translateY(30px);
             text-transform: uppercase; letter-spacing: 1px;
@@ -154,12 +148,12 @@
         #fingerprint.active { background: #fff; color:#ff006e; border-style: solid; animation: none; transform: scale(0.95); }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 30px rgba(255,255,255,0); } }
 
-        /* MODAL */
+        /* MODAL FINAL */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 5000; flex-direction:column; align-items:center; justify-content:center; }
-        #polaroid { background: white; padding: 25px 25px 80px 25px; transform: rotate(-2deg); box-shadow: 0 0 80px rgba(255,0,110,0.6); text-align: center; max-width: 85%; border-radius: 10px; }
+        #polaroid { background: white; padding: 25px 25px 60px 25px; transform: rotate(-2deg); box-shadow: 0 0 80px rgba(255,0,110,0.6); text-align: center; max-width: 85%; border-radius: 10px; }
         #foto-result { width: 100%; max-width: 500px; border: 2px solid #eee; display: block; }
-        #score-badge { position: absolute; top: -30px; right: -20px; background: #ffdd00; color: #000; font-size: 2.5rem; font-weight: bold; padding: 20px; border-radius: 50%; border: 5px solid black; transform: rotate(15deg); font-family: 'Bangers', cursive; }
-        #frase-final { font-family: 'Fredoka', sans-serif; color: #ff006e; font-size: 2.2rem; margin-top: 25px; font-weight: bold; text-transform: uppercase; }
+        #frase-final { font-family: 'Fredoka', sans-serif; color: #ff006e; font-size: 1.5rem; margin-top: 20px; font-weight: bold; line-height: 1.3; }
+        #timer-reset { position: absolute; top: 10px; right: 20px; color: white; font-size: 1.5rem; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
 
         #start-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #ff006e, #8338ec); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
     </style>
@@ -203,36 +197,30 @@
     </div>
 
     <div id="modal">
+        <div id="timer-reset">Reiniciando en 20s...</div>
         <div id="polaroid">
-            <div id="score-badge">100%</div>
             <img id="foto-result" src="">
-            <h2 id="frase-final">Fierro Pariente</h2>
+            <div id="frase-final">Análisis...</div>
         </div>
-        <div style="margin-top:30px; display:flex; gap:20px;">
+        <div style="margin-top:20px; display:flex; gap:20px;">
             <button class="btn btn-b show" onclick="descargar()">GUARDAR FOTO</button>
-            <button class="btn btn-a show" onclick="location.reload()">REINICIAR</button>
+            <button class="btn btn-a show" onclick="location.reload()">REINICIAR YA</button>
         </div>
     </div>
 
     <script>
-        // --- VOZ REALISTA (Prosodia Artificial) ---
+        // --- VOZ MEJORADA ---
         let vozSeleccionada = null;
-        
-        // Intentamos buscar las mejores voces disponibles en el navegador
         window.speechSynthesis.onvoiceschanged = () => {
             const voces = window.speechSynthesis.getVoices();
-            console.log("Voces disponibles:", voces.length);
-            
-            // Prioridad: 1. Google US Spanish (Android), 2. Microsoft Mexico, 3. Cualquier ES-MX
             vozSeleccionada = voces.find(v => v.name.includes('Google') && v.lang.includes('es')) || 
-                              voces.find(v => v.name.includes('Mexico') || v.name.includes('Sabina') || v.name.includes('Raul')) ||
                               voces.find(v => v.lang === 'es-MX') || 
                               voces.find(v => v.lang.includes('es'));
         };
 
-        // --- EMOJIS ESCUINAPA ---
+        // --- EMOJIS ---
         function crearEmojisFondo() {
-            const emojis = ['🍤', '🚲', '🥭', '🌴', '❤️', '🌮', '🌊'];
+            const emojis = ['🍤', '🚲', '🥭', '🌴', '❤️', '🌮', '🌊', '☀️'];
             const container = document.getElementById('emoji-layer');
             setInterval(() => {
                 const el = document.createElement('div');
@@ -246,58 +234,74 @@
         }
         crearEmojisFondo();
 
-        // --- BASE DE DATOS (Logica Pareja Corregida) ---
+        // --- BASE DE DATOS MASIVA (5 PREGUNTAS) ---
         const DB = {
             SOLO: {
                 intro: [
-                    "¡Qué rollo! ¿Vienes solo? A toda madre, mejor solo que mal acompañado.",
-                    "¡Epa! Te veo muy solito pariente. Vamos a ver qué dice tu suerte.",
-                    "¿Soltero? ¡Fierro! Tienes más tiempo para ir a Las Cabras."
+                    "¡Qué rollo! ¿Vienes solo? Mejor solo que mal acompañado.",
+                    "¡Epa! Te veo muy solito pariente. A ver qué dice la suerte.",
+                    "¿Soltero? ¡Fierro! Tienes más tiempo para la bici."
                 ],
+                // BANCO DE PREGUNTAS (Se elegirán 5 al azar)
                 preguntas: [
-                    { q: "¿Qué prefieres el fin de semana?", a: "Malecón y relax 🌊", b: "Cenar tacos dorados 🌮", rA: "¡Puro relax, eso es todo!", rB: "¡Uff, provecho pariente!" },
-                    { q: "¿Qué buscas en una pareja?", a: "Que sea leal 🤝", b: "Que me haga reír 😂", rA: "La lealtad es primero.", rB: "La risa enamora, dicen." },
-                    { q: "¿Bicicleta o Moto?", a: "Pura Bici 🚲", b: "Moto 🏍️", rA: "¡Puro deporte local!", rB: "Con cuidado en esas calles." }
+                    { q: "¿Qué prefieres el fin de semana?", a: "Malecón y relax 🌊", b: "Fiesta y banda 🥁", rA: "Tranquilón, me gusta.", rB: "¡Fiestero el plebe!" },
+                    { q: "¿Qué buscas en una pareja?", a: "Lealtad ante todo 🤝", b: "Que me haga reír 😂", rA: "La base de todo.", rB: "Risa es igual a amor." },
+                    { q: "¿Bicicleta o Moto?", a: "Pura Bici 🚲", b: "Moto 🏍️", rA: "¡Puro deporte local!", rB: "Con casco eh, pariente." },
+                    { q: "¿Cenarías tamales barbudos en la primera cita?", a: "¡Claro que sí! 🫔", b: "Mejor algo fresa 🍓", rA: "Eso es orgullo culichi.", rB: "Uy, qué delicado." },
+                    { q: "¿Perdonarías una infidelidad?", a: "Jamás 🚫", b: "Tal vez... 🤔", rA: "Dignidad al 100.", rB: "No lo haga compa." },
+                    { q: "¿Te gusta el calor de aquí?", a: "Lo amo ☀️", b: "Lo odio 🥵", rA: "Team Calor, eso es todo.", rB: "Ponte en el aire pues." },
+                    { q: "¿Irías a Las Cabras con tu ex?", a: "Ni loco/a", b: "Si paga todo, sí", rA: "Sabia decisión.", rB: "El interés tiene pies." },
+                    { q: "¿Eres celoso/a?", a: "Un poquito 🤏", b: "Cero celos 😎", rA: "Poquito es normal.", rB: "Qué seguridad te cargas." },
+                    { q: "¿Crees en el amor a primera vista?", a: "Simón 😍", b: "Puro cuento", rA: "Ay, qué romántico.", rB: "Directo y realista." }
                 ],
                 resultados: [
-                    { t: "Soltero de Oro", s: "100%", d: "Brillas más que el sol de Teacapán." },
-                    { t: "Romántico", s: "85%", d: "El amor ya viene en camino." },
-                    { t: "Libre y Feliz", s: "99%", d: "Disfruta tu libertad, pariente." }
+                    { t: "Soltero de Oro", d: "Eres un partidazo. Disfruta tu libertad, el amor llegará cuando menos lo esperes. Mientras, ¡vete por unos tacos!" },
+                    { t: "Romántico Empedernido", d: "Tienes mucho amor para dar. No te desesperes, esa persona especial anda perdida en Teacapán, pero ya viene." },
+                    { t: "Alma Libre", d: "Tu vibra es de libertad total. No necesitas a nadie para ser feliz, ¡y eso se nota! Sigue brillando." },
+                    { t: "El Inalcanzable", d: "Traes los estándares muy altos. Está bien, no te conformes con menos de lo que mereces, pariente." }
                 ]
             },
             PAREJA: {
                 intro: [
                     "¡Pareja a la vista! Ojo: Que conteste solo uno de ustedes, pónganse de acuerdo.",
-                    "Se ven bien juntos. Pero solo uno pique los botones, no se peleen.",
-                    "A ver si es amor del bueno. Elijan quién va a responder por los dos."
+                    "Se ven bien juntos. Pero solo uno pique los botones, no se peleen."
                 ],
                 preguntas: [
-                    { q: "¿Quién de ustedes invita la cena?", a: "Él/Ella siempre 💸", b: "Vamos micha y micha", rA: "¡Qué buen partido te conseguiste!", rB: "Justos, así me gusta." },
-                    { q: "¿Quién se enoja más rápido?", a: "Él/Ella 😡", b: "Yo mero 😒", rA: "Paciencia pariente, paciencia.", rB: "Bájale dos rayitas al drama." },
-                    { q: "¿Quién maneja mejor la bici?", a: "Él/Ella es pro 🚲", b: "Yo soy mejor", rA: "¡Puro talento de Escuinapa!", rB: "Hagan carreritas pues." },
-                    { q: "¿Quién es más probable que olvide el aniversario?", a: "Él/Ella 📅", b: "Yo, tengo mala memoria", rA: "¡Pónganle alarma al cel!", rB: "¡Ay dolor! Te va a tocar castigo." }
+                    { q: "¿Quién invita los camarones?", a: "Él/Ella siempre 🍤", b: "Vamos micha y micha", rA: "¡Cuídalo/a, vale oro!", rB: "Parejos, muy bien." },
+                    { q: "¿Quién se enoja más rápido?", a: "Él/Ella 😡", b: "Yo mero 😒", rA: "Paciencia pariente.", rB: "Bájale al drama." },
+                    { q: "¿Quién maneja mejor la bici?", a: "Él/Ella es pro 🚲", b: "Yo soy mejor", rA: "¡Talento local!", rB: "Hagan carreritas." },
+                    { q: "¿Quién olvida las fechas importantes?", a: "Él/Ella 📅", b: "Yo, mala memoria", rA: "¡Pónganle alarma!", rB: "Te va a tocar castigo." },
+                    { q: "¿Se revisarían el celular?", a: "Nel, confianza 🤝", b: "Préstalo pa'ca 👀", rA: "Eso es amor sano.", rB: "¡Se va a armar!" },
+                    { q: "¿Domingo ideal?", a: "Ver pelis 🎬", b: "Salir a dar la vuelta", rA: "Acurrucaditos mejor.", rB: "A lucirse al malecón." },
+                    { q: "¿Quién cocina más rico?", a: "Él/Ella 🍳", b: "Yo soy Chef", rA: "El amor entra por la panza.", rB: "Inviten a cenar pues." },
+                    { q: "¿Quién es más cariñoso?", a: "Él/Ella 🥰", b: "Yo soy un bombón", rA: "Qué bonito es lo bonito.", rB: "Pura miel derraman." }
                 ],
                 resultados: [
-                    { t: "Amor del Bueno", s: "100%", d: "Se ven bien enamorados, ¡Felicidades!" },
-                    { t: "Pareja Dispareja", s: "60%", d: "Uno jala más que el otro, aguas." },
-                    { t: "Jalos al 100", s: "95%", d: "Son el uno para el otro, ¡Fierro!" }
+                    { t: "Amor del Bueno", d: "Se nota que se quieren un chorro. Tienen una conexión bárbara, sigan así de unidos y leales." },
+                    { t: "Pareja Dinamita", d: "Son pura energía juntos. A veces chocan, pero es porque se aman con intensidad. ¡Bájenle al drama y súbanle al amor!" },
+                    { t: "Equipo Perfecto", d: "Se complementan como el mango y el chamoy. Lo que le falta a uno, lo tiene el otro. ¡Felicidades plebes!" },
+                    { t: "Almas Gemelas", d: "Están hechos el uno para el otro. Su destino es estar juntos, hasta viejitos en la mecedora." }
                 ]
             },
             AMIGOS: {
                 intro: [
-                    "¡Puro compa aquí! Ojo: Uno responde, el otro apoya.",
-                    "La clika de Escuinapa. Decidan quién va a picarle a la pantalla.",
-                    "A ver quién es el líder. Solo uno responde por el equipo."
+                    "¡Puro compa aquí! Ojo: Uno responde, el otro apoya. Lealtad ante todo.",
+                    "La clika de Escuinapa. Decidan quién va a picarle a la pantalla."
                 ],
                 preguntas: [
-                    { q: "¿Quién baila mejor en las fiestas?", a: "Mi compa 💃", b: "Yo, obvio", rA: "¡A sacar los pasos prohibidos!", rB: "El alma de la fiesta." },
-                    { q: "¿Quién le debe dinero a quién?", a: "Yo le debo 🙈", b: "Me debe feria 😠", rA: "Págale los 20 pesos, no seas así.", rB: "Cóbrale con intereses." },
-                    { q: "¿Quién llega tarde siempre?", a: "Mi compa 🐢", b: "Yo, la neta", rA: "Regálale un reloj, pariente.", rB: "La puntualidad es cortesía de reyes." }
+                    { q: "¿Quién baila mejor?", a: "Mi compa 💃", b: "Yo, obvio", rA: "¡A sacar los prohibidos!", rB: "El alma de la fiesta." },
+                    { q: "¿Quién debe dinero?", a: "Yo le debo 🙈", b: "Me debe feria 😠", rA: "Paga los 20 pesos.", rB: "Cóbrale con intereses." },
+                    { q: "¿Quién llega tarde?", a: "Mi compa 🐢", b: "Yo, la neta", rA: "Regálale un reloj.", rB: "La puntualidad es clave." },
+                    { q: "¿Guardarían un secreto grave?", a: "A la tumba ⚰️", b: "Se me escapa 🙊", rA: "Lealtad pura.", rB: "Aguas contigo." },
+                    { q: "¿Quién es más probable que acabe preso?", a: "Mi compa 🚓", b: "Yo soy el caos", rA: "¡Córrele!", rB: "Mala influencia." },
+                    { q: "¿Quién picha la cena hoy?", a: "Este compa 🍔", b: "Yo invito", rA: "¡Ese es amigo!", rB: "Qué generoso." },
+                    { q: "¿Se han peleado por un amor?", a: "Jamás 🚫", b: "Una vez... 💔", rA: "La amistad es primero.", rB: "Eso no se hace." }
                 ],
                 resultados: [
-                    { t: "Compas de Acero", s: "100%", d: "Amistad chingona, a prueba de todo." },
-                    { t: "El Dúo Dinámico", s: "90%", d: "Juntos hacen puro desorden sano." },
-                    { t: "Hermanos", s: "99%", d: "Sangre por sangre plebes." }
+                    { t: "Compas de Acero", d: "Esta amistad es a prueba de balas. Pase lo que pase, siempre se van a respaldar. ¡Eso es lealtad!" },
+                    { t: "El Dúo Dinámico", d: "Juntos son un desorden, pero del bueno. Son la alegría de la fiesta y el terror de los vecinos." },
+                    { t: "Hermanos de Otra Madre", d: "Lo de ustedes no es amistad, es hermandad. Se conocen todos los secretos y aun así se quieren." },
+                    { t: "Socios del Crimen", d: "Cuidado con ustedes dos juntos. Tienen una complicidad única, ¡nunca cambien esa vibra!" }
                 ]
             }
         };
@@ -308,6 +312,7 @@
         const textBubble = document.getElementById('texto-globo');
         const btnContainer = document.getElementById('botones-container');
         const sensorInstruccion = document.getElementById('sensor-instruccion');
+        const NUM_PREGUNTAS = 5; // Cuestionario de 5
 
         // INICIO
         async function setup() {
@@ -326,13 +331,13 @@
         function iniciarApp() {
             document.getElementById('start-screen').style.display = 'none';
             loopOjos(); 
-            setEmocion('sospecha'); // Cara interesante al inicio
+            setEmocion('sospecha');
             hablar("¡Qué rollo plebes! Soy el Cupido del I.M.J.U. Escuinapa. Vengo a leer sus vibras.", () => {
                 setTimeout(preguntarModo, 1000);
             });
         }
 
-        // JUEGO
+        // LÓGICA DE JUEGO
         function preguntarModo() {
             setEmocion('sorpresa');
             mostrarTexto("¿Quién anda ahí?");
@@ -352,7 +357,8 @@
 
         function prepararJuego() {
             const data = DB[currentMode];
-            questionQueue = [...data.preguntas].sort(() => 0.5 - Math.random()).slice(0, 3);
+            // REVUELVE Y TOMA 5 PREGUNTAS
+            questionQueue = [...data.preguntas].sort(() => 0.5 - Math.random()).slice(0, NUM_PREGUNTAS);
             qIndex = 0;
             const introRandom = data.intro[Math.floor(Math.random() * data.intro.length)];
             setEmocion('hablando');
@@ -362,9 +368,9 @@
         function siguientePregunta() {
             if (qIndex >= questionQueue.length) { faseSensor(); return; }
             const q = questionQueue[qIndex];
-            setEmocion('sospecha'); // Cara de análisis
+            setEmocion('sospecha');
             setTimeout(() => {
-                setEmocion('normal'); // Cara normal
+                setEmocion('normal');
                 mostrarTexto(q.q);
                 hablar(q.q, () => { 
                     setTimeout(() => {
@@ -377,9 +383,9 @@
         function handleRespuesta(opcion) {
             const q = questionQueue[qIndex];
             const reaccion = opcion === "A" ? q.rA : q.rB;
-            // Expresiones fluidas
+            
             if (reaccion.includes("!")) setEmocion('sorpresa'); 
-            else if (reaccion.includes("amor") || reaccion.includes("bonito")) setEmocion('feliz');
+            else if (reaccion.includes("amor") || reaccion.includes("bonito") || reaccion.includes("bien")) setEmocion('feliz');
             else setEmocion('hablando');
             
             mostrarTexto(reaccion);
@@ -430,7 +436,7 @@
             textBubble.classList.add('alerta');
             mostrarTexto("¡Ey! ¡Sin miedo! Déjalo puesto.");
             playSonido(150, 100, 0.3);
-            setEmocion('sospecha'); // Cara de regaño
+            setEmocion('sospecha');
             
             setTimeout(() => {
                 textBubble.classList.remove('alerta');
@@ -447,8 +453,9 @@
             const res = resultadosPosibles[Math.floor(Math.random() * resultadosPosibles.length)];
             
             mostrarTexto("¡ANÁLISIS COMPLETO!");
-            hablar(`¡Fierro! Ustedes son: ${res.t}. ${res.d}. ¡Acomódense pa' la foto!`, () => {
-                setTimeout(() => cuentaRegresivaFoto(res), 1500);
+            hablar(`¡Fierro! Ustedes son: ${res.t}. ${res.d}`, () => {
+                // Leemos el análisis ANTES de la foto
+                setTimeout(() => cuentaRegresivaFoto(res), 500);
             });
         }
 
@@ -481,9 +488,25 @@
             ctx.drawImage(video, 0, 0);
             
             document.getElementById('foto-result').src = canvas.toDataURL('image/jpeg');
-            document.getElementById('score-badge').innerText = res.s;
-            document.getElementById('frase-final').innerText = res.t;
+            // Frase elaborada
+            document.getElementById('frase-final').innerText = `${res.t}: ${res.d}`;
             document.getElementById('modal').style.display = 'flex';
+
+            // AUTO-RESET EN 20 SEGUNDOS
+            iniciarAutoReset();
+        }
+
+        function iniciarAutoReset() {
+            let timeLeft = 20;
+            const timerEl = document.getElementById('timer-reset');
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = `Reiniciando en ${timeLeft}s...`;
+                if(timeLeft <= 0) {
+                    clearInterval(interval);
+                    location.reload();
+                }
+            }, 1000);
         }
 
         // UTILS
@@ -493,7 +516,6 @@
                 const p = preds[0];
                 const x = (p.topLeft[0] + p.bottomRight[0]) / 2;
                 const y = (p.topLeft[1] + p.bottomRight[1]) / 2;
-                // Movimiento muy suave
                 const xEye = (x / video.videoWidth - 0.5) * 60; 
                 const yEye = (y / video.videoHeight - 0.5) * 50;
                 document.querySelectorAll('.pupila').forEach(pup => {
@@ -516,16 +538,11 @@
             if (vozSeleccionada) u.voice = vozSeleccionada;
             u.lang = "es-MX";
             
-            // "Prosodia Artificial" (Cambia tono según puntuación para sonar real)
-            if (texto.includes("!")) { 
-                u.rate = 1.1; u.pitch = 1.2; // Exclamación: Rápido y agudo
-            } else if (texto.includes("?")) { 
-                u.rate = 1.0; u.pitch = 1.1; // Pregunta: Tono sube al final
-            } else if (texto.includes("...")) {
-                u.rate = 0.9; u.pitch = 0.9; // Suspenso: Lento y grave
-            } else { 
-                u.rate = 1.0; u.pitch = 1.0; // Normal
-            }
+            // PROSODIA ARTIFICIAL
+            if (texto.includes("!")) { u.rate = 1.15; u.pitch = 1.2; }
+            else if (texto.includes("?")) { u.rate = 1.0; u.pitch = 1.1; }
+            else if (texto.includes("...")) { u.rate = 0.9; u.pitch = 0.9; }
+            else { u.rate = 1.0; u.pitch = 1.0; }
 
             u.onstart = () => document.getElementById('cabeza').classList.add('hablando');
             u.onend = () => {
