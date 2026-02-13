@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cupido IMJU Escuinapa - Final V13</title>
+    <title>Cupido IMJU Escuinapa - V15 Mega Pack</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
@@ -165,7 +165,8 @@
     <div id="start-screen">
         <h1 style="font-family: 'Bangers', cursive; font-size: 6rem; margin-bottom: 10px; text-shadow: 5px 5px 0px #000;">CUPIDO IMJU</h1>
         <h2 style="font-size: 2rem; margin-top: 0; opacity: 1;">ESCUINAPA 🍤🚲</h2>
-        <p style="font-size: 1.5rem; margin-bottom: 40px;">Descubre tu suerte en el amor</p>
+        <p style="font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">¡Jálense plebes!</p>
+        <p style="font-size: 1.4rem; margin-bottom: 40px; opacity: 0.9;">¿Hay futuro o nel? ¡Vengan a descubrir su suerte!</p>
         <button class="btn btn-a show" id="btn-init" onclick="iniciarApp()" disabled>Iniciando Sistema...</button>
     </div>
 
@@ -209,7 +210,7 @@
     </div>
 
     <script>
-        // --- VOZ MEJORADA ---
+        // --- VOZ ---
         let vozSeleccionada = null;
         window.speechSynthesis.onvoiceschanged = () => {
             const voces = window.speechSynthesis.getVoices();
@@ -220,7 +221,7 @@
 
         // --- EMOJIS ---
         function crearEmojisFondo() {
-            const emojis = ['🍤', '🚲', '🥭', '🌴', '❤️', '🌮', '🌊', '☀️'];
+            const emojis = ['🍤', '🚲', '🥭', '🌴', '❤️', '🌮', '🌊', '☀️', '💖', '🎵'];
             const container = document.getElementById('emoji-layer');
             setInterval(() => {
                 const el = document.createElement('div');
@@ -234,15 +235,15 @@
         }
         crearEmojisFondo();
 
-        // --- BASE DE DATOS MASIVA (5 PREGUNTAS) ---
+        // --- BASE DE DATOS MASIVA (MEGA PACK) ---
         const DB = {
             SOLO: {
                 intro: [
-                    "¡Qué rollo! ¿Vienes solo? Mejor solo que mal acompañado.",
+                    "¡Qué rollo! ¿Vienes solo? A toda madre, mejor solo que mal acompañado.",
                     "¡Epa! Te veo muy solito pariente. A ver qué dice la suerte.",
-                    "¿Soltero? ¡Fierro! Tienes más tiempo para la bici."
+                    "¿Soltero? ¡Fierro! Tienes más tiempo para la bici y los tamales.",
+                    "Vienes a probar suerte, eso me gusta. A ver si sales con novia/o hoy."
                 ],
-                // BANCO DE PREGUNTAS (Se elegirán 5 al azar)
                 preguntas: [
                     { q: "¿Qué prefieres el fin de semana?", a: "Malecón y relax 🌊", b: "Fiesta y banda 🥁", rA: "Tranquilón, me gusta.", rB: "¡Fiestero el plebe!" },
                     { q: "¿Qué buscas en una pareja?", a: "Lealtad ante todo 🤝", b: "Que me haga reír 😂", rA: "La base de todo.", rB: "Risa es igual a amor." },
@@ -252,19 +253,29 @@
                     { q: "¿Te gusta el calor de aquí?", a: "Lo amo ☀️", b: "Lo odio 🥵", rA: "Team Calor, eso es todo.", rB: "Ponte en el aire pues." },
                     { q: "¿Irías a Las Cabras con tu ex?", a: "Ni loco/a", b: "Si paga todo, sí", rA: "Sabia decisión.", rB: "El interés tiene pies." },
                     { q: "¿Eres celoso/a?", a: "Un poquito 🤏", b: "Cero celos 😎", rA: "Poquito es normal.", rB: "Qué seguridad te cargas." },
-                    { q: "¿Crees en el amor a primera vista?", a: "Simón 😍", b: "Puro cuento", rA: "Ay, qué romántico.", rB: "Directo y realista." }
+                    { q: "¿Crees en el amor a primera vista?", a: "Simón 😍", b: "Puro cuento", rA: "Ay, qué romántico.", rB: "Directo y realista." },
+                    { q: "¿Aguachile verde o rojo?", a: "Verde 🌶️", b: "Rojo (tranqui)", rA: "Te gusta sufrir, ¡bien!", rB: "Pa' no enchilarse." },
+                    { q: "¿Stalkeas a tu crush?", a: "Investigador FBI 🕵️", b: "Nel, qué flojera", rA: "Cuidado con el dedo resbaloso.", rB: "Muy maduro de tu parte." },
+                    { q: "¿Quién da el primer paso?", a: "Yo mero 😎", b: "Que me busquen", rA: "Actitud ganadora.", rB: "A esperar sentado entonces." },
+                    { q: "¿Banda o Reggaeton?", a: "La Tambora 🎺", b: "Perreo intenso", rA: "¡Arriba la banda!", rB: "Hasta el suelo pariente." },
+                    { q: "¿Te quieres casar algún día?", a: "Sí, boda grande 💍", b: "Mejor viajar ✈️", rA: "Ahorra para el pachangón.", rB: "Espíritu libre." },
+                    { q: "¿Eres de los que lloran con pelis?", a: "Un mar de lágrimas 😭", b: "Corazón de piedra 🗿", rA: "Qué sentimental.", rB: "Duro de matar." },
+                    { q: "¿Te gusta que te regalen flores?", a: "Me encantan 🌹", b: "Mejor comida 🌮", rA: "Clásico y bonito.", rB: "Amor con hambre no dura." }
                 ],
                 resultados: [
                     { t: "Soltero de Oro", d: "Eres un partidazo. Disfruta tu libertad, el amor llegará cuando menos lo esperes. Mientras, ¡vete por unos tacos!" },
                     { t: "Romántico Empedernido", d: "Tienes mucho amor para dar. No te desesperes, esa persona especial anda perdida en Teacapán, pero ya viene." },
                     { t: "Alma Libre", d: "Tu vibra es de libertad total. No necesitas a nadie para ser feliz, ¡y eso se nota! Sigue brillando." },
-                    { t: "El Inalcanzable", d: "Traes los estándares muy altos. Está bien, no te conformes con menos de lo que mereces, pariente." }
+                    { t: "El Inalcanzable", d: "Traes los estándares muy altos. Está bien, no te conformes con menos de lo que mereces, pariente." },
+                    { t: "Corazón Blindado", d: "Te haces el duro, pero en el fondo eres bien tierno. Déjate querer un poquito, no pasa nada." },
+                    { t: "Aventurero Solitario", d: "Lo tuyo es explorar y vivir al día. El amor te encontrará en una de tus aventuras, no lo busques." }
                 ]
             },
             PAREJA: {
                 intro: [
                     "¡Pareja a la vista! Ojo: Que conteste solo uno de ustedes, pónganse de acuerdo.",
-                    "Se ven bien juntos. Pero solo uno pique los botones, no se peleen."
+                    "Se ven bien juntos. Pero solo uno pique los botones, no se peleen.",
+                    "¡Ay el amor! Vamos a ver si duran hasta las próximas fiestas del mar."
                 ],
                 preguntas: [
                     { q: "¿Quién invita los camarones?", a: "Él/Ella siempre 🍤", b: "Vamos micha y micha", rA: "¡Cuídalo/a, vale oro!", rB: "Parejos, muy bien." },
@@ -274,19 +285,30 @@
                     { q: "¿Se revisarían el celular?", a: "Nel, confianza 🤝", b: "Préstalo pa'ca 👀", rA: "Eso es amor sano.", rB: "¡Se va a armar!" },
                     { q: "¿Domingo ideal?", a: "Ver pelis 🎬", b: "Salir a dar la vuelta", rA: "Acurrucaditos mejor.", rB: "A lucirse al malecón." },
                     { q: "¿Quién cocina más rico?", a: "Él/Ella 🍳", b: "Yo soy Chef", rA: "El amor entra por la panza.", rB: "Inviten a cenar pues." },
-                    { q: "¿Quién es más cariñoso?", a: "Él/Ella 🥰", b: "Yo soy un bombón", rA: "Qué bonito es lo bonito.", rB: "Pura miel derraman." }
+                    { q: "¿Quién es más cariñoso?", a: "Él/Ella 🥰", b: "Yo soy un bombón", rA: "Qué bonito es lo bonito.", rB: "Pura miel derraman." },
+                    { q: "¿Quién se duerme en las películas?", a: "Él/Ella ronca 😴", b: "Yo caigo frito", rA: "Qué aburridos, jaja.", rB: "Te perdiste el final." },
+                    { q: "¿Cómo se llevan con los suegros?", a: "Soy el consentido 😇", b: "Me hacen caras 😠", rA: "Ya la hiciste.", rB: "Gánatelos con tamales." },
+                    { q: "¿Besos en público?", a: "Sí, mucho amor 😘", b: "Me da pena 😳", rA: "¡Que viva el amor!", rB: "Respetables, muy bien." },
+                    { q: "¿Quién tarda más arreglándose?", a: "Él/Ella uff ⏳", b: "Yo soy lento", rA: "La belleza cuesta tiempo.", rB: "Paciencia, mucha paciencia." },
+                    { q: "¿Quién gana en las peleas?", a: "Él/Ella siempre", b: "Yo nunca pierdo", rA: "Mandilón pero feliz.", rB: "Qué carácter te cargas." },
+                    { q: "¿Ahorrar o Gastar?", a: "Ahorrar pa'l futuro 💰", b: "Vivir el momento 💸", rA: "Mente de tiburón.", rB: "¡Disfruten, que se acaba!" },
+                    { q: "¿Hijos o Mascotas?", a: "Bebés 👶", b: "Perrhijos 🐶", rA: "A comprar pañales.", rB: "A comprar croquetas." },
+                    { q: "¿Playa o Rancho?", a: "Playa y sol 🏖️", b: "Rancho y caballos 🐎", rA: "A broncearse.", rB: "¡Fierro pariente!" }
                 ],
                 resultados: [
                     { t: "Amor del Bueno", d: "Se nota que se quieren un chorro. Tienen una conexión bárbara, sigan así de unidos y leales." },
                     { t: "Pareja Dinamita", d: "Son pura energía juntos. A veces chocan, pero es porque se aman con intensidad. ¡Bájenle al drama y súbanle al amor!" },
                     { t: "Equipo Perfecto", d: "Se complementan como el mango y el chamoy. Lo que le falta a uno, lo tiene el otro. ¡Felicidades plebes!" },
-                    { t: "Almas Gemelas", d: "Están hechos el uno para el otro. Su destino es estar juntos, hasta viejitos en la mecedora." }
+                    { t: "Almas Gemelas", d: "Están hechos el uno para el otro. Su destino es estar juntos, hasta viejitos en la mecedora." },
+                    { t: "Polos Opuestos", d: "Son muy diferentes, pero eso es lo divertido. Uno pone la calma y el otro el desorden. ¡Funcionan increíble!" },
+                    { t: "Pareja de Telenovela", d: "Mucho drama, mucha pasión y mucho amor. Nunca se aburren, pero aguas con los celos, eh." }
                 ]
             },
             AMIGOS: {
                 intro: [
                     "¡Puro compa aquí! Ojo: Uno responde, el otro apoya. Lealtad ante todo.",
-                    "La clika de Escuinapa. Decidan quién va a picarle a la pantalla."
+                    "La clika de Escuinapa. Decidan quién va a picarle a la pantalla.",
+                    "A ver quién es el líder de la manada. Solo uno responde."
                 ],
                 preguntas: [
                     { q: "¿Quién baila mejor?", a: "Mi compa 💃", b: "Yo, obvio", rA: "¡A sacar los prohibidos!", rB: "El alma de la fiesta." },
@@ -295,13 +317,23 @@
                     { q: "¿Guardarían un secreto grave?", a: "A la tumba ⚰️", b: "Se me escapa 🙊", rA: "Lealtad pura.", rB: "Aguas contigo." },
                     { q: "¿Quién es más probable que acabe preso?", a: "Mi compa 🚓", b: "Yo soy el caos", rA: "¡Córrele!", rB: "Mala influencia." },
                     { q: "¿Quién picha la cena hoy?", a: "Este compa 🍔", b: "Yo invito", rA: "¡Ese es amigo!", rB: "Qué generoso." },
-                    { q: "¿Se han peleado por un amor?", a: "Jamás 🚫", b: "Una vez... 💔", rA: "La amistad es primero.", rB: "Eso no se hace." }
+                    { q: "¿Se han peleado por un amor?", a: "Jamás 🚫", b: "Una vez... 💔", rA: "La amistad es primero.", rB: "Eso no se hace." },
+                    { q: "¿Quién se enamora de cualquiera?", a: "Mi compa 😍", b: "Yo soy fácil", rA: "Corazón de condominio.", rB: "Enamorado del amor." },
+                    { q: "¿Quién come más?", a: "Barril sin fondo 🌮", b: "Comemos igual", rA: "Sale caro invitarlo.", rB: "Buen diente." },
+                    { q: "¿Quién es el más chismoso?", a: "Mi compa sabe todo 🕵️", b: "Yo soy comunicativo", rA: "Ventaneando le dicen.", rB: "Información es poder." },
+                    { q: "¿Quién aguanta más despierto?", a: "Búho nocturno 🦉", b: "Se duerme temprano", rA: "¡Fiesta hasta el amanecer!", rB: "Ya está viejito/a." },
+                    { q: "¿Se prestan ropa?", a: "Todo el tiempo 👕", b: "Guácala no", rA: "Eso es confianza.", rB: "Cada quien sus trapos." },
+                    { q: "¿Quién maneja mejor?", a: "Mi compa es piloto 🏎️", b: "Yo manejo mejor", rA: "Seguridad ante todo.", rB: "¡Fierro por la costera!" },
+                    { q: "¿Quién llora más fácil?", a: "Mi compa es chillón 😢", b: "Yo soy de lágrima", rA: "Hay que darle un abrazo.", rB: "Sentimientos a flor de piel." },
+                    { q: "¿Irían juntos de viaje?", a: "¡Ya tenemos maletas! ✈️", b: "Nos matamos antes", rA: "¡Vámonos!", rB: "Mejor de lejitos." }
                 ],
                 resultados: [
                     { t: "Compas de Acero", d: "Esta amistad es a prueba de balas. Pase lo que pase, siempre se van a respaldar. ¡Eso es lealtad!" },
                     { t: "El Dúo Dinámico", d: "Juntos son un desorden, pero del bueno. Son la alegría de la fiesta y el terror de los vecinos." },
                     { t: "Hermanos de Otra Madre", d: "Lo de ustedes no es amistad, es hermandad. Se conocen todos los secretos y aun así se quieren." },
-                    { t: "Socios del Crimen", d: "Cuidado con ustedes dos juntos. Tienen una complicidad única, ¡nunca cambien esa vibra!" }
+                    { t: "Socios del Crimen", d: "Cuidado con ustedes dos juntos. Tienen una complicidad única, ¡nunca cambien esa vibra!" },
+                    { t: "Amigos de Parranda", d: "Ustedes nomás se juntan y ya tienen sed. Son divertidos, pero cuídense el uno al otro, plebes." },
+                    { t: "Los Inseparables", d: "Donde va uno, va el otro. Parecen chicles. Es una amistad bonita de esas que duran toda la vida." }
                 ]
             }
         };
@@ -344,7 +376,7 @@
             mostrarBotones([
                 { txt: "Ando Solo/a 🤠", val: "SOLO" },
                 { txt: "Somos Pareja ❤️", val: "PAREJA" },
-                { txt: "Pura Raza ✌️", val: "AMIGOS" }
+                { txt: "Somos Amigos ✌️", val: "AMIGOS" }
             ]);
         }
 
@@ -538,7 +570,6 @@
             if (vozSeleccionada) u.voice = vozSeleccionada;
             u.lang = "es-MX";
             
-            // PROSODIA ARTIFICIAL
             if (texto.includes("!")) { u.rate = 1.15; u.pitch = 1.2; }
             else if (texto.includes("?")) { u.rate = 1.0; u.pitch = 1.1; }
             else if (texto.includes("...")) { u.rate = 0.9; u.pitch = 0.9; }
