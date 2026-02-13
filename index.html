@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cupido IMJU Escuinapa - V15 Mega Pack</title>
+    <title>Cupido IMJU Escuinapa - V17 Final</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
@@ -26,15 +26,20 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* EMOJIS FLOTANTES */
+        /* FLASH */
+        #flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 6000; pointer-events: none; opacity: 0; transition: opacity 0.1s;
+        }
+        .flash-active { opacity: 1 !important; }
+
+        /* EMOJIS FONDO */
         .emoji-float {
             position: absolute; bottom: -50px; font-size: 2.5rem; opacity: 0.2;
             animation: subir 9s linear infinite; pointer-events: none; z-index: 0;
         }
         @keyframes subir {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.3; }
-            90% { opacity: 0.3; }
             100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
         }
 
@@ -64,7 +69,7 @@
         .faccion-sombra { filter: drop-shadow(0 8px 4px rgba(0,0,0,0.2)); }
 
         /* Cejas */
-        .cejas-row { display: flex; gap: 140px; position: absolute; top: 30px; width: 100%; justify-content: center; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cejas-row { display: flex; gap: 140px; position: absolute; top: 30px; width: 100%; justify-content: center; transition: 0.4s; }
         .ceja { width: 110px; height: 28px; background: white; border-radius: 30px; transition: 0.3s; }
 
         /* Ojos */
@@ -82,14 +87,12 @@
             width: 30px; height: 30px; background: white; border-radius: 50%;
             position: absolute; top: 25px; right: 30px; opacity: 0.9;
         }
-        
-        /* Boca */
         .boca { 
             width: 80px; height: 25px; background: white; border-radius: 30px; 
             margin-top: 70px; transition: 0.3s; 
         }
 
-        /* --- EXPRESIONES --- */
+        /* Expresiones */
         .hablando .boca { width: 100px; height: 70px; border-radius: 40% 40% 50% 50%; animation: hablarAnim 0.2s infinite alternate; }
         .hablando .ceja { animation: cejasHablando 0.5s infinite alternate; }
         @keyframes hablarAnim { from { height: 30px; transform: scaleY(0.8); } to { height: 70px; transform: scaleY(1); } }
@@ -122,7 +125,7 @@
             position: relative; z-index: 20;
         }
         #texto-globo.visible { transform: scale(1); opacity: 1; }
-        #texto-globo.alerta { color: #ff006e; }
+        #texto-globo.alerta { color: #ff006e; font-size: 4rem; font-family: 'Bangers', cursive; text-shadow: 4px 4px 0 #000; letter-spacing: 3px; }
 
         /* --- BOTONES --- */
         #botones-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 95%; z-index: 20; }
@@ -137,22 +140,35 @@
         .btn-a { background: white; color: #ff006e; }
         .btn-b { background: #3a86ff; color: white; }
 
-        /* SENSOR */
-        #sensor-area { display: none; flex-direction: column; align-items: center; margin-top: 10px; z-index: 20; }
-        #fingerprint {
-            font-size: 6rem; width: 160px; height: 160px; border-radius: 50%;
+        /* --- NUEVO SENSOR DUAL --- */
+        #sensor-area { display: none; flex-direction: column; align-items: center; margin-top: 10px; z-index: 20; width: 100%; }
+        #sensor-wrapper { display: flex; gap: 40px; justify-content: center; align-items: center; }
+        
+        .fingerprint-btn {
+            font-size: 4rem; width: 130px; height: 130px; border-radius: 50%;
             background: rgba(255,255,255,0.2); border: 8px dashed white; display: flex;
             align-items: center; justify-content: center; cursor: pointer; animation: pulse 1.5s infinite;
-            user-select: none; -webkit-tap-highlight-color: transparent;
+            user-select: none; -webkit-tap-highlight-color: transparent; transition: 0.3s;
         }
-        #fingerprint.active { background: #fff; color:#ff006e; border-style: solid; animation: none; transform: scale(0.95); }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 30px rgba(255,255,255,0); } }
+        .fingerprint-btn.active { background: #fff; border-style: solid; animation: none; transform: scale(0.9); }
+        
+        /* Icono de resultado final (fusión) */
+        #final-icon { display: none; font-size: 8rem; animation: latido 0.8s infinite; filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
 
-        /* MODAL FINAL */
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 30px rgba(255,255,255,0); } }
+        @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* MODAL FINAL CON MARCOS REACTIVOS */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 5000; flex-direction:column; align-items:center; justify-content:center; }
-        #polaroid { background: white; padding: 25px 25px 60px 25px; transform: rotate(-2deg); box-shadow: 0 0 80px rgba(255,0,110,0.6); text-align: center; max-width: 85%; border-radius: 10px; }
+        #polaroid { background: white; padding: 25px 25px 60px 25px; transform: rotate(-2deg); box-shadow: 0 0 80px rgba(255,0,110,0.6); text-align: center; max-width: 85%; border-radius: 10px; border: 15px solid white; transition: 0.3s; }
+        
+        .frame-gold { border-color: #ffd700 !important; box-shadow: 0 0 60px #ffd700 !important; }
+        .frame-love { border-color: #ff006e !important; box-shadow: 0 0 60px #ff006e !important; }
+        .frame-friend { border-color: #3a86ff !important; box-shadow: 0 0 60px #3a86ff !important; }
+        .frame-toxic { border-color: #333 !important; box-shadow: 0 0 60px #555 !important; }
+
         #foto-result { width: 100%; max-width: 500px; border: 2px solid #eee; display: block; }
-        #frase-final { font-family: 'Fredoka', sans-serif; color: #ff006e; font-size: 1.5rem; margin-top: 20px; font-weight: bold; line-height: 1.3; }
+        #frase-final { font-family: 'Fredoka', sans-serif; color: #222; font-size: 1.5rem; margin-top: 20px; font-weight: bold; line-height: 1.3; }
         #timer-reset { position: absolute; top: 10px; right: 20px; color: white; font-size: 1.5rem; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
 
         #start-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #ff006e, #8338ec); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
@@ -160,6 +176,7 @@
 </head>
 <body>
 
+    <div id="flash-overlay"></div>
     <div id="emoji-layer"></div>
 
     <div id="start-screen">
@@ -193,8 +210,9 @@
     <div id="botones-container"></div>
 
     <div id="sensor-area">
-        <div id="fingerprint" onmousedown="scanStart()" onmouseup="scanEnd()" ontouchstart="scanStart()" ontouchend="scanEnd()">💖</div>
-        <p id="sensor-instruccion" style="font-weight:bold; margin-top:25px; font-size: 1.5rem; text-shadow: 0 2px 4px black;">MANTÉN PULSADO</p>
+        <div id="sensor-wrapper">
+            </div>
+        <div id="final-icon">💖</div> <p id="sensor-instruccion" style="font-weight:bold; margin-top:25px; font-size: 1.5rem; text-shadow: 0 2px 4px black;">MANTÉN PULSADO</p>
     </div>
 
     <div id="modal">
@@ -215,8 +233,7 @@
         window.speechSynthesis.onvoiceschanged = () => {
             const voces = window.speechSynthesis.getVoices();
             vozSeleccionada = voces.find(v => v.name.includes('Google') && v.lang.includes('es')) || 
-                              voces.find(v => v.lang === 'es-MX') || 
-                              voces.find(v => v.lang.includes('es'));
+                              voces.find(v => v.lang === 'es-MX');
         };
 
         // --- EMOJIS ---
@@ -235,106 +252,55 @@
         }
         crearEmojisFondo();
 
-        // --- BASE DE DATOS MASIVA (MEGA PACK) ---
+        // --- BASE DE DATOS (V16) ---
         const DB = {
             SOLO: {
-                intro: [
-                    "¡Qué rollo! ¿Vienes solo? A toda madre, mejor solo que mal acompañado.",
-                    "¡Epa! Te veo muy solito pariente. A ver qué dice la suerte.",
-                    "¿Soltero? ¡Fierro! Tienes más tiempo para la bici y los tamales.",
-                    "Vienes a probar suerte, eso me gusta. A ver si sales con novia/o hoy."
-                ],
+                intro: [ "¡Qué rollo! ¿Vienes solo? A ver qué dice la suerte hoy.", "¿Soltero? ¡Fierro! Más tiempo para la bici." ],
                 preguntas: [
-                    { q: "¿Qué prefieres el fin de semana?", a: "Malecón y relax 🌊", b: "Fiesta y banda 🥁", rA: "Tranquilón, me gusta.", rB: "¡Fiestero el plebe!" },
-                    { q: "¿Qué buscas en una pareja?", a: "Lealtad ante todo 🤝", b: "Que me haga reír 😂", rA: "La base de todo.", rB: "Risa es igual a amor." },
-                    { q: "¿Bicicleta o Moto?", a: "Pura Bici 🚲", b: "Moto 🏍️", rA: "¡Puro deporte local!", rB: "Con casco eh, pariente." },
-                    { q: "¿Cenarías tamales barbudos en la primera cita?", a: "¡Claro que sí! 🫔", b: "Mejor algo fresa 🍓", rA: "Eso es orgullo culichi.", rB: "Uy, qué delicado." },
-                    { q: "¿Perdonarías una infidelidad?", a: "Jamás 🚫", b: "Tal vez... 🤔", rA: "Dignidad al 100.", rB: "No lo haga compa." },
-                    { q: "¿Te gusta el calor de aquí?", a: "Lo amo ☀️", b: "Lo odio 🥵", rA: "Team Calor, eso es todo.", rB: "Ponte en el aire pues." },
-                    { q: "¿Irías a Las Cabras con tu ex?", a: "Ni loco/a", b: "Si paga todo, sí", rA: "Sabia decisión.", rB: "El interés tiene pies." },
-                    { q: "¿Eres celoso/a?", a: "Un poquito 🤏", b: "Cero celos 😎", rA: "Poquito es normal.", rB: "Qué seguridad te cargas." },
-                    { q: "¿Crees en el amor a primera vista?", a: "Simón 😍", b: "Puro cuento", rA: "Ay, qué romántico.", rB: "Directo y realista." },
-                    { q: "¿Aguachile verde o rojo?", a: "Verde 🌶️", b: "Rojo (tranqui)", rA: "Te gusta sufrir, ¡bien!", rB: "Pa' no enchilarse." },
-                    { q: "¿Stalkeas a tu crush?", a: "Investigador FBI 🕵️", b: "Nel, qué flojera", rA: "Cuidado con el dedo resbaloso.", rB: "Muy maduro de tu parte." },
-                    { q: "¿Quién da el primer paso?", a: "Yo mero 😎", b: "Que me busquen", rA: "Actitud ganadora.", rB: "A esperar sentado entonces." },
-                    { q: "¿Banda o Reggaeton?", a: "La Tambora 🎺", b: "Perreo intenso", rA: "¡Arriba la banda!", rB: "Hasta el suelo pariente." },
-                    { q: "¿Te quieres casar algún día?", a: "Sí, boda grande 💍", b: "Mejor viajar ✈️", rA: "Ahorra para el pachangón.", rB: "Espíritu libre." },
-                    { q: "¿Eres de los que lloran con pelis?", a: "Un mar de lágrimas 😭", b: "Corazón de piedra 🗿", rA: "Qué sentimental.", rB: "Duro de matar." },
-                    { q: "¿Te gusta que te regalen flores?", a: "Me encantan 🌹", b: "Mejor comida 🌮", rA: "Clásico y bonito.", rB: "Amor con hambre no dura." }
+                    { q: "¿Qué prefieres el fin?", a: "Malecón 🌊", b: "Fiesta 🥁", rA: "Tranquilón.", rB: "¡Fiestero!" },
+                    { q: "¿Cenarías tamales en la primera cita?", a: "¡Claro! 🫔", b: "Algo fresa 🍓", rA: "Orgullo local.", rB: "Uy, delicado." },
+                    { q: "¿Perdonarías cuernos?", a: "Jamás 🚫", b: "Tal vez... 🤔", rA: "Dignidad.", rB: "No lo haga compa." },
+                    { q: "¿Bicicleta o Moto?", a: "Pura Bici 🚲", b: "Moto 🏍️", rA: "¡Deporte!", rB: "Con casco, eh." },
+                    { q: "¿Te quieres casar?", a: "Sí, bodorrio 💍", b: "Mejor viajar ✈️", rA: "Ahorra feria.", rB: "Espíritu libre." }
                 ],
                 resultados: [
-                    { t: "Soltero de Oro", d: "Eres un partidazo. Disfruta tu libertad, el amor llegará cuando menos lo esperes. Mientras, ¡vete por unos tacos!" },
-                    { t: "Romántico Empedernido", d: "Tienes mucho amor para dar. No te desesperes, esa persona especial anda perdida en Teacapán, pero ya viene." },
-                    { t: "Alma Libre", d: "Tu vibra es de libertad total. No necesitas a nadie para ser feliz, ¡y eso se nota! Sigue brillando." },
-                    { t: "El Inalcanzable", d: "Traes los estándares muy altos. Está bien, no te conformes con menos de lo que mereces, pariente." },
-                    { t: "Corazón Blindado", d: "Te haces el duro, pero en el fondo eres bien tierno. Déjate querer un poquito, no pasa nada." },
-                    { t: "Aventurero Solitario", d: "Lo tuyo es explorar y vivir al día. El amor te encontrará en una de tus aventuras, no lo busques." }
-                ]
+                    { t: "Soltero de Oro", d: "Eres un partidazo. Disfruta tu libertad, el amor llegará cuando menos lo esperes.", frame: "frame-gold", iconFinal: "👩‍❤️‍💋‍👨" },
+                    { t: "Romántico", d: "No te desesperes, esa persona especial anda perdida en Teacapán.", frame: "frame-love", iconFinal: "💘" },
+                    { t: "Alma Libre", d: "Tu vibra es de libertad total. No necesitas a nadie para ser feliz.", frame: "frame-friend", iconFinal: "🦋" }
+                ],
+                emojiBtn: "👤"
             },
             PAREJA: {
-                intro: [
-                    "¡Pareja a la vista! Ojo: Que conteste solo uno de ustedes, pónganse de acuerdo.",
-                    "Se ven bien juntos. Pero solo uno pique los botones, no se peleen.",
-                    "¡Ay el amor! Vamos a ver si duran hasta las próximas fiestas del mar."
-                ],
+                intro: [ "¡Pareja a la vista! Pónganse de acuerdo quién contesta.", "Se ven bien juntos. A ver si aguantan el test." ],
                 preguntas: [
-                    { q: "¿Quién invita los camarones?", a: "Él/Ella siempre 🍤", b: "Vamos micha y micha", rA: "¡Cuídalo/a, vale oro!", rB: "Parejos, muy bien." },
-                    { q: "¿Quién se enoja más rápido?", a: "Él/Ella 😡", b: "Yo mero 😒", rA: "Paciencia pariente.", rB: "Bájale al drama." },
-                    { q: "¿Quién maneja mejor la bici?", a: "Él/Ella es pro 🚲", b: "Yo soy mejor", rA: "¡Talento local!", rB: "Hagan carreritas." },
-                    { q: "¿Quién olvida las fechas importantes?", a: "Él/Ella 📅", b: "Yo, mala memoria", rA: "¡Pónganle alarma!", rB: "Te va a tocar castigo." },
-                    { q: "¿Se revisarían el celular?", a: "Nel, confianza 🤝", b: "Préstalo pa'ca 👀", rA: "Eso es amor sano.", rB: "¡Se va a armar!" },
-                    { q: "¿Domingo ideal?", a: "Ver pelis 🎬", b: "Salir a dar la vuelta", rA: "Acurrucaditos mejor.", rB: "A lucirse al malecón." },
-                    { q: "¿Quién cocina más rico?", a: "Él/Ella 🍳", b: "Yo soy Chef", rA: "El amor entra por la panza.", rB: "Inviten a cenar pues." },
-                    { q: "¿Quién es más cariñoso?", a: "Él/Ella 🥰", b: "Yo soy un bombón", rA: "Qué bonito es lo bonito.", rB: "Pura miel derraman." },
-                    { q: "¿Quién se duerme en las películas?", a: "Él/Ella ronca 😴", b: "Yo caigo frito", rA: "Qué aburridos, jaja.", rB: "Te perdiste el final." },
-                    { q: "¿Cómo se llevan con los suegros?", a: "Soy el consentido 😇", b: "Me hacen caras 😠", rA: "Ya la hiciste.", rB: "Gánatelos con tamales." },
-                    { q: "¿Besos en público?", a: "Sí, mucho amor 😘", b: "Me da pena 😳", rA: "¡Que viva el amor!", rB: "Respetables, muy bien." },
-                    { q: "¿Quién tarda más arreglándose?", a: "Él/Ella uff ⏳", b: "Yo soy lento", rA: "La belleza cuesta tiempo.", rB: "Paciencia, mucha paciencia." },
-                    { q: "¿Quién gana en las peleas?", a: "Él/Ella siempre", b: "Yo nunca pierdo", rA: "Mandilón pero feliz.", rB: "Qué carácter te cargas." },
-                    { q: "¿Ahorrar o Gastar?", a: "Ahorrar pa'l futuro 💰", b: "Vivir el momento 💸", rA: "Mente de tiburón.", rB: "¡Disfruten, que se acaba!" },
-                    { q: "¿Hijos o Mascotas?", a: "Bebés 👶", b: "Perrhijos 🐶", rA: "A comprar pañales.", rB: "A comprar croquetas." },
-                    { q: "¿Playa o Rancho?", a: "Playa y sol 🏖️", b: "Rancho y caballos 🐎", rA: "A broncearse.", rB: "¡Fierro pariente!" }
+                    { q: "¿Quién invita los camarones?", a: "Él/Ella 🍤", b: "Micha y micha", rA: "¡Vale oro!", rB: "Parejos." },
+                    { q: "¿Quién es más celoso?", a: "Él/Ella 😡", b: "Yo mero 😒", rA: "Paciencia.", rB: "Bájale al drama." },
+                    { q: "¿Quién maneja mejor la bici?", a: "Él/Ella 🚲", b: "Yo", rA: "¡Talento!", rB: "Hagan carreritas." },
+                    { q: "¿Revisarían el celular?", a: "Nel 🤝", b: "Préstalo 👀", rA: "Amor sano.", rB: "¡Tóxicos!" },
+                    { q: "¿Besos en público?", a: "Sí, obvio 😘", b: "Me da pena 😳", rA: "¡Viva el amor!", rB: "Respetables." }
                 ],
                 resultados: [
-                    { t: "Amor del Bueno", d: "Se nota que se quieren un chorro. Tienen una conexión bárbara, sigan así de unidos y leales." },
-                    { t: "Pareja Dinamita", d: "Son pura energía juntos. A veces chocan, pero es porque se aman con intensidad. ¡Bájenle al drama y súbanle al amor!" },
-                    { t: "Equipo Perfecto", d: "Se complementan como el mango y el chamoy. Lo que le falta a uno, lo tiene el otro. ¡Felicidades plebes!" },
-                    { t: "Almas Gemelas", d: "Están hechos el uno para el otro. Su destino es estar juntos, hasta viejitos en la mecedora." },
-                    { t: "Polos Opuestos", d: "Son muy diferentes, pero eso es lo divertido. Uno pone la calma y el otro el desorden. ¡Funcionan increíble!" },
-                    { t: "Pareja de Telenovela", d: "Mucho drama, mucha pasión y mucho amor. Nunca se aburren, pero aguas con los celos, eh." }
-                ]
+                    { t: "Amor del Bueno", d: "Tienen una conexión bárbara, sigan así de unidos.", frame: "frame-love", iconFinal: "💖" },
+                    { t: "Pareja Dinamita", d: "Son pura energía. Se aman con intensidad, pero bájenle al drama.", frame: "frame-love", iconFinal: "🔥" },
+                    { t: "Polos Opuestos", d: "Son diferentes pero se complementan. Uno pone la calma y el otro el desorden.", frame: "frame-friend", iconFinal: "☯️" }
+                ],
+                emojiBtn: "❤️"
             },
             AMIGOS: {
-                intro: [
-                    "¡Puro compa aquí! Ojo: Uno responde, el otro apoya. Lealtad ante todo.",
-                    "La clika de Escuinapa. Decidan quién va a picarle a la pantalla.",
-                    "A ver quién es el líder de la manada. Solo uno responde."
-                ],
+                intro: [ "¡Puro compa aquí! Lealtad ante todo. Uno responde.", "La clika de Escuinapa. A ver quién es el líder." ],
                 preguntas: [
-                    { q: "¿Quién baila mejor?", a: "Mi compa 💃", b: "Yo, obvio", rA: "¡A sacar los prohibidos!", rB: "El alma de la fiesta." },
-                    { q: "¿Quién debe dinero?", a: "Yo le debo 🙈", b: "Me debe feria 😠", rA: "Paga los 20 pesos.", rB: "Cóbrale con intereses." },
-                    { q: "¿Quién llega tarde?", a: "Mi compa 🐢", b: "Yo, la neta", rA: "Regálale un reloj.", rB: "La puntualidad es clave." },
-                    { q: "¿Guardarían un secreto grave?", a: "A la tumba ⚰️", b: "Se me escapa 🙊", rA: "Lealtad pura.", rB: "Aguas contigo." },
-                    { q: "¿Quién es más probable que acabe preso?", a: "Mi compa 🚓", b: "Yo soy el caos", rA: "¡Córrele!", rB: "Mala influencia." },
-                    { q: "¿Quién picha la cena hoy?", a: "Este compa 🍔", b: "Yo invito", rA: "¡Ese es amigo!", rB: "Qué generoso." },
-                    { q: "¿Se han peleado por un amor?", a: "Jamás 🚫", b: "Una vez... 💔", rA: "La amistad es primero.", rB: "Eso no se hace." },
-                    { q: "¿Quién se enamora de cualquiera?", a: "Mi compa 😍", b: "Yo soy fácil", rA: "Corazón de condominio.", rB: "Enamorado del amor." },
-                    { q: "¿Quién come más?", a: "Barril sin fondo 🌮", b: "Comemos igual", rA: "Sale caro invitarlo.", rB: "Buen diente." },
-                    { q: "¿Quién es el más chismoso?", a: "Mi compa sabe todo 🕵️", b: "Yo soy comunicativo", rA: "Ventaneando le dicen.", rB: "Información es poder." },
-                    { q: "¿Quién aguanta más despierto?", a: "Búho nocturno 🦉", b: "Se duerme temprano", rA: "¡Fiesta hasta el amanecer!", rB: "Ya está viejito/a." },
-                    { q: "¿Se prestan ropa?", a: "Todo el tiempo 👕", b: "Guácala no", rA: "Eso es confianza.", rB: "Cada quien sus trapos." },
-                    { q: "¿Quién maneja mejor?", a: "Mi compa es piloto 🏎️", b: "Yo manejo mejor", rA: "Seguridad ante todo.", rB: "¡Fierro por la costera!" },
-                    { q: "¿Quién llora más fácil?", a: "Mi compa es chillón 😢", b: "Yo soy de lágrima", rA: "Hay que darle un abrazo.", rB: "Sentimientos a flor de piel." },
-                    { q: "¿Irían juntos de viaje?", a: "¡Ya tenemos maletas! ✈️", b: "Nos matamos antes", rA: "¡Vámonos!", rB: "Mejor de lejitos." }
+                    { q: "¿Quién baila mejor?", a: "Mi compa 💃", b: "Yo", rA: "¡Saca los pasos!", rB: "El alma de la fiesta." },
+                    { q: "¿Quién debe dinero?", a: "Yo 🙈", b: "Me debe feria 😠", rA: "Págale los 20.", rB: "Cóbrale." },
+                    { q: "¿Quién picha la cena?", a: "Este compa 🍔", b: "Yo invito", rA: "¡Buen amigo!", rB: "Generoso." },
+                    { q: "¿Guardarían un secreto?", a: "A la tumba ⚰️", b: "Se me sale 🙊", rA: "Lealtad.", rB: "Aguas contigo." },
+                    { q: "¿Irían de viaje?", a: "¡Vámonos! ✈️", b: "Nos matamos", rA: "Maletas listas.", rB: "Mejor de lejitos." }
                 ],
                 resultados: [
-                    { t: "Compas de Acero", d: "Esta amistad es a prueba de balas. Pase lo que pase, siempre se van a respaldar. ¡Eso es lealtad!" },
-                    { t: "El Dúo Dinámico", d: "Juntos son un desorden, pero del bueno. Son la alegría de la fiesta y el terror de los vecinos." },
-                    { t: "Hermanos de Otra Madre", d: "Lo de ustedes no es amistad, es hermandad. Se conocen todos los secretos y aun así se quieren." },
-                    { t: "Socios del Crimen", d: "Cuidado con ustedes dos juntos. Tienen una complicidad única, ¡nunca cambien esa vibra!" },
-                    { t: "Amigos de Parranda", d: "Ustedes nomás se juntan y ya tienen sed. Son divertidos, pero cuídense el uno al otro, plebes." },
-                    { t: "Los Inseparables", d: "Donde va uno, va el otro. Parecen chicles. Es una amistad bonita de esas que duran toda la vida." }
-                ]
+                    { t: "Compas de Acero", d: "Amistad a prueba de balas. Siempre se van a respaldar.", frame: "frame-friend", iconFinal: "🤝" },
+                    { t: "Socios del Crimen", d: "Cuidado con ustedes dos. Tienen una complicidad única.", frame: "frame-toxic", iconFinal: "😎" },
+                    { t: "Hermanos", d: "Lo suyo es hermandad. Se conocen todo y se quieren.", frame: "frame-gold", iconFinal: "🤞" }
+                ],
+                emojiBtn: "✋"
             }
         };
 
@@ -344,7 +310,8 @@
         const textBubble = document.getElementById('texto-globo');
         const btnContainer = document.getElementById('botones-container');
         const sensorInstruccion = document.getElementById('sensor-instruccion');
-        const NUM_PREGUNTAS = 5; // Cuestionario de 5
+        const sensorWrapper = document.getElementById('sensor-wrapper');
+        const NUM_PREGUNTAS = 5;
 
         // INICIO
         async function setup() {
@@ -356,7 +323,7 @@
                 model = await blazeface.load();
                 document.getElementById('btn-init').innerText = "¡DALE GAS!";
                 document.getElementById('btn-init').disabled = false;
-            } catch(e) { alert("Activa la cámara pariente, es necesario."); }
+            } catch(e) { alert("Activa la cámara pariente."); }
         }
         setup();
 
@@ -389,7 +356,6 @@
 
         function prepararJuego() {
             const data = DB[currentMode];
-            // REVUELVE Y TOMA 5 PREGUNTAS
             questionQueue = [...data.preguntas].sort(() => 0.5 - Math.random()).slice(0, NUM_PREGUNTAS);
             qIndex = 0;
             const introRandom = data.intro[Math.floor(Math.random() * data.intro.length)];
@@ -415,9 +381,8 @@
         function handleRespuesta(opcion) {
             const q = questionQueue[qIndex];
             const reaccion = opcion === "A" ? q.rA : q.rB;
-            
             if (reaccion.includes("!")) setEmocion('sorpresa'); 
-            else if (reaccion.includes("amor") || reaccion.includes("bonito") || reaccion.includes("bien")) setEmocion('feliz');
+            else if (reaccion.includes("amor") || reaccion.includes("bien")) setEmocion('feliz');
             else setEmocion('hablando');
             
             mostrarTexto(reaccion);
@@ -427,92 +392,134 @@
             });
         }
 
-        // SENSOR
+        // --- SENSOR DUAL INTELIGENTE ---
+        let activeFingers = 0;
+        let sensorTimer;
+        let requiredFingers = 1;
+
         function faseSensor() {
             setEmocion('sospecha');
-            const txt = currentMode === "SOLO" ? "Pon tu dedo y no lo sueltes." : "Pongan los dedos juntos y mantengan presionado.";
+            sensorWrapper.innerHTML = ""; // Limpiar
+            const data = DB[currentMode];
+            requiredFingers = (currentMode === "SOLO") ? 1 : 2;
+
+            // Generar botones
+            for(let i=0; i<requiredFingers; i++) {
+                let div = document.createElement('div');
+                div.className = "fingerprint-btn";
+                div.innerHTML = data.emojiBtn;
+                div.id = "finger-" + i;
+                
+                // EVENTOS TOUCH Y MOUSE
+                div.addEventListener('mousedown', () => fingerDown(i));
+                div.addEventListener('mouseup', () => fingerUp(i));
+                div.addEventListener('touchstart', (e) => { e.preventDefault(); fingerDown(i); });
+                div.addEventListener('touchend', (e) => { e.preventDefault(); fingerUp(i); });
+                div.addEventListener('mouseleave', () => fingerUp(i));
+
+                sensorWrapper.appendChild(div);
+            }
+
+            const txt = (currentMode === "SOLO") ? "Pon tu dedo en la huella." : "¡Pongan sus dedos AL MISMO TIEMPO!";
             mostrarTexto("¡Hora de la verdad!");
             hablar(txt, () => {
                 btnContainer.innerHTML = "";
                 document.getElementById('sensor-area').style.display = 'flex';
+                activeFingers = 0;
             });
         }
 
-        let sensorTimer;
-        let sensorCompleto = false;
-
-        function scanStart() {
-            if(sensorCompleto) return;
-            const f = document.getElementById('fingerprint');
-            f.classList.add('active');
+        function fingerDown(index) {
+            const btn = document.getElementById("finger-" + index);
+            if(btn.classList.contains('active')) return;
             
-            sensorInstruccion.innerText = "¡NO SUELTES!";
-            sensorInstruccion.style.color = "#ffbe0b";
-            mostrarTexto("LEYENDO VIBRAS...");
-            playSonido(200, 400, 0.5);
+            btn.classList.add('active');
+            
+            // Hack para PC: Si no es modo solo y usas mouse, activamos los dos para poder probar
+            if(requiredFingers === 2 && !('ontouchstart' in window)) {
+                document.querySelectorAll('.fingerprint-btn').forEach(b => b.classList.add('active'));
+                activeFingers = 2;
+            } else {
+                activeFingers++;
+            }
 
-            sensorTimer = setTimeout(() => {
-                sensorCompleto = true;
-                exitoSensor();
-            }, 3000);
+            checkSensorStatus();
         }
 
-        function scanEnd() {
-            if(sensorCompleto) return;
-            const f = document.getElementById('fingerprint');
-            f.classList.remove('active');
+        function fingerUp(index) {
+            const btn = document.getElementById("finger-" + index);
+            if(!btn.classList.contains('active')) return;
+            
+            btn.classList.remove('active');
+            
+            if(requiredFingers === 2 && !('ontouchstart' in window)) {
+                document.querySelectorAll('.fingerprint-btn').forEach(b => b.classList.remove('active'));
+                activeFingers = 0;
+            } else {
+                activeFingers--;
+            }
+            
+            checkSensorStatus();
+        }
+
+        function checkSensorStatus() {
             clearTimeout(sensorTimer);
-            
-            sensorInstruccion.innerText = "¡TE DIJE QUE NO SOLTARAS!";
-            sensorInstruccion.style.color = "white";
-            textBubble.classList.add('alerta');
-            mostrarTexto("¡Ey! ¡Sin miedo! Déjalo puesto.");
-            playSonido(150, 100, 0.3);
-            setEmocion('sospecha');
-            
-            setTimeout(() => {
-                textBubble.classList.remove('alerta');
-                sensorInstruccion.innerText = "INTENTA OTRA VEZ";
-            }, 1500);
+            if (activeFingers >= requiredFingers) {
+                sensorInstruccion.innerText = "¡NO SUELTEN!";
+                sensorInstruccion.style.color = "#ffbe0b";
+                mostrarTexto("LEYENDO VIBRAS...");
+                sensorTimer = setTimeout(exitoSensor, 3000);
+            } else {
+                if (document.getElementById('sensor-area').style.display === 'flex') {
+                    sensorInstruccion.innerText = "MANTÉN PULSADO";
+                    sensorInstruccion.style.color = "white";
+                    // Si soltaron a medio proceso
+                    if(activeFingers > 0) mostrarTexto("¡Falta uno!");
+                }
+            }
         }
 
         function exitoSensor() {
-            document.getElementById('sensor-area').style.display = 'none';
-            setEmocion('enamorado');
-            playSonido(600, 1200, 1.0);
+            document.getElementById('sensor-wrapper').style.display = 'none';
+            const icon = document.getElementById('final-icon');
             
-            const resultadosPosibles = DB[currentMode].resultados;
-            const res = resultadosPosibles[Math.floor(Math.random() * resultadosPosibles.length)];
+            const resultados = DB[currentMode].resultados;
+            const res = resultados[Math.floor(Math.random() * resultados.length)];
+            
+            // TRANSICIÓN DE ICONO
+            icon.innerText = res.iconFinal;
+            icon.style.display = 'block';
+            setEmocion('enamorado');
             
             mostrarTexto("¡ANÁLISIS COMPLETO!");
-            hablar(`¡Fierro! Ustedes son: ${res.t}. ${res.d}`, () => {
-                // Leemos el análisis ANTES de la foto
-                setTimeout(() => cuentaRegresivaFoto(res), 500);
+            hablar(`¡Fierro! Ustedes son: ${res.t}. ¡Acomódense el cabello plebes, que va la foto!`, () => {
+                setTimeout(() => cuentaRegresivaFoto(res), 1000);
             });
         }
 
         function cuentaRegresivaFoto(resFinal) {
             setEmocion('feliz');
             cancelAnimationFrame(trackingReq); 
-            
             let count = 3;
             textBubble.classList.add('alerta'); 
 
             const interval = setInterval(() => {
                  if(count > 0) {
                      mostrarTexto(count);
-                     playSonido(800, 800, 0.1);
                      count--;
                  } else {
                      clearInterval(interval);
                      mostrarTexto("¡SONRÍAN! 📸");
-                     playSonido(1000, 1200, 0.3);
-                     setTimeout(() => tomarFoto(resFinal), 500);
+                     tomarFoto(resFinal);
                  }
             }, 1000);
         }
 
         function tomarFoto(res) {
+            const flash = document.getElementById('flash-overlay');
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 150);
+
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
@@ -520,11 +527,14 @@
             ctx.drawImage(video, 0, 0);
             
             document.getElementById('foto-result').src = canvas.toDataURL('image/jpeg');
-            // Frase elaborada
             document.getElementById('frase-final').innerText = `${res.t}: ${res.d}`;
+            
+            // MARCO DINÁMICO
+            const polaroid = document.getElementById('polaroid');
+            polaroid.className = ""; 
+            polaroid.classList.add(res.frame);
+            
             document.getElementById('modal').style.display = 'flex';
-
-            // AUTO-RESET EN 20 SEGUNDOS
             iniciarAutoReset();
         }
 
@@ -541,7 +551,6 @@
             }, 1000);
         }
 
-        // UTILS
         async function loopOjos() {
             const preds = await model.estimateFaces(video, false);
             if (preds.length > 0) {
@@ -599,18 +608,6 @@
                 btnContainer.appendChild(btn);
                 setTimeout(() => btn.classList.add('show'), i * 150);
             });
-        }
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSonido(f1, f2, duracion = 0.5) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(f2, audioCtx.currentTime + duracion);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duracion);
-            osc.start(); osc.stop(audioCtx.currentTime + duracion);
         }
 
         function descargar() {
